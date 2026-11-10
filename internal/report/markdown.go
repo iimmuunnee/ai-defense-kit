@@ -182,39 +182,85 @@ func writeSummary(b *strings.Builder, fs []finding.Finding, ignored int) {
 	}
 }
 
+// writeDetails prints the findings. Findings of one number whose severity,
+// title, explanation, fix, links and standards are all the same are one
+// section: that text is printed once and the findings are listed under it. A
+// finding that shares its text with no other keeps a section of its own.
 func writeDetails(b *strings.Builder, fs []finding.Finding, noIgnoreAdvice bool) {
 	b.WriteString("## 상세\n\n")
+	// Sections come in the order of their first finding, and the findings of
+	// a section stay in the order of fs.
+	var order []string
+	groups := map[string][]finding.Finding{}
 	for _, f := range fs {
-		fmt.Fprintf(b, "### [%s] %s\n\n", severityKo[f.Severity], markdownText(f.Title))
+		k := sharedTextKey(f)
+		if _, ok := groups[k]; !ok {
+			order = append(order, k)
+		}
+		groups[k] = append(groups[k], f)
+	}
+	for _, k := range order {
+		g := groups[k]
+		f := g[0]
+		if len(g) == 1 {
+			fmt.Fprintf(b, "### [%s] %s\n\n", severityKo[f.Severity], markdownText(f.Title))
+			fmt.Fprintf(b, "- 번호: %s\n", f.ID)
+			fmt.Fprintf(b, "- 위치: `%s`\n", codeSpanLocation(f))
+			writeFindingFacts(b, "", f, noIgnoreAdvice)
+			writeSharedText(b, f)
+			b.WriteString("\n")
+			continue
+		}
+		fmt.Fprintf(b, "### [%s] %s (%d건)\n\n", severityKo[f.Severity], markdownText(f.Title), len(g))
 		fmt.Fprintf(b, "- 번호: %s\n", f.ID)
-		fmt.Fprintf(b, "- 위치: `%s`\n", codeSpanLocation(f))
-		fmt.Fprintf(b, "- 판단: %s\n", confidenceKo(f.Confidence))
-		if f.Fingerprint != "" && noIgnoreAdvice {
-			fmt.Fprintf(b, "- 지문: %s\n", f.Fingerprint)
-		} else if f.Fingerprint != "" {
-			fmt.Fprintf(b, "- 지문: %s (무시하려면 .adkignore에 추가)\n", f.Fingerprint)
+		writeSharedText(b, f)
+		fmt.Fprintf(b, "\n**해당 결과 %d건**\n\n", len(g))
+		for i, f := range g {
+			fmt.Fprintf(b, "%d. 위치: `%s`\n", i+1, codeSpanLocation(f))
+			writeFindingFacts(b, "   ", f, noIgnoreAdvice)
 		}
-		if f.Exploited {
-			b.WriteString("- 실제 공격 중: 예 (CISA KEV 목록에 있음)\n")
-		}
-		if f.Evidence != "" {
-			fmt.Fprintf(b, "- 근거: `%s`\n", oneLine(codeSpan(f.Evidence)))
-		}
-		if f.ExplainKo != "" {
-			fmt.Fprintf(b, "\n%s\n", strings.TrimSpace(f.ExplainKo))
-		}
-		if f.Fix != "" {
-			fmt.Fprintf(b, "\n**수정 방법**\n\n%s\n", strings.TrimSpace(f.Fix))
-		}
-		if len(f.References) > 0 {
-			b.WriteString("\n**참고 링크**\n\n")
-			for _, ref := range f.References {
-				fmt.Fprintf(b, "- %s\n", ref)
-			}
-		}
-		writeMappings(b, f.Mappings)
 		b.WriteString("\n")
 	}
+}
+
+// sharedTextKey is the same for two findings exactly when everything
+// writeSharedText and the section heading print for them is the same.
+func sharedTextKey(f finding.Finding) string {
+	return fmt.Sprintf("%q %d %q %q %q %q %q", f.ID, f.Severity, f.Title, f.ExplainKo, f.Fix, f.References, f.Mappings)
+}
+
+// writeFindingFacts prints what belongs to one finding alone, below its place.
+func writeFindingFacts(b *strings.Builder, indent string, f finding.Finding, noIgnoreAdvice bool) {
+	fmt.Fprintf(b, "%s- 판단: %s\n", indent, confidenceKo(f.Confidence))
+	if f.Fingerprint != "" && noIgnoreAdvice {
+		fmt.Fprintf(b, "%s- 지문: %s\n", indent, f.Fingerprint)
+	} else if f.Fingerprint != "" {
+		fmt.Fprintf(b, "%s- 지문: %s (무시하려면 .adkignore에 추가)\n", indent, f.Fingerprint)
+	}
+	if f.Exploited {
+		fmt.Fprintf(b, "%s- 실제 공격 중: 예 (CISA KEV 목록에 있음)\n", indent)
+	}
+	if f.Evidence != "" {
+		fmt.Fprintf(b, "%s- 근거: `%s`\n", indent, oneLine(codeSpan(f.Evidence)))
+	}
+}
+
+// writeSharedText prints what findings of one section have in common: the
+// explanation, the fix, the links and the standards.
+func writeSharedText(b *strings.Builder, f finding.Finding) {
+	if f.ExplainKo != "" {
+		fmt.Fprintf(b, "\n%s\n", strings.TrimSpace(f.ExplainKo))
+	}
+	if f.Fix != "" {
+		fmt.Fprintf(b, "\n**수정 방법**\n\n%s\n", strings.TrimSpace(f.Fix))
+	}
+	if len(f.References) > 0 {
+		b.WriteString("\n**참고 링크**\n\n")
+		for _, ref := range f.References {
+			fmt.Fprintf(b, "- %s\n", ref)
+		}
+	}
+	writeMappings(b, f.Mappings)
 }
 
 // AssetsNotice says what an assets report did and did not do.
