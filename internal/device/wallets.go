@@ -145,12 +145,15 @@ func (c *walletCheck) skipped(path string) bool {
 	return false
 }
 
-func (c *walletCheck) add(id, path, evidence string) {
+// add reports one finding at path. what names the thing found there and,
+// with the place, is what the fingerprint is made of; evidence is what the
+// report shows.
+func (c *walletCheck) add(id, path, what, evidence string) {
 	if c.skipped(path) {
 		return
 	}
 	loc := c.shown(path)
-	fp := finding.MakeFingerprint(id, loc, evidence)
+	fp := finding.MakeFingerprint(id, loc, what)
 	if c.added[fp] {
 		return
 	}
@@ -248,10 +251,11 @@ func (c *walletCheck) extensions(d appDirs) {
 			}
 		}
 		for _, p := range profiles {
+			var found profileStores
 			les := filepath.Join(p, "Local Extension Settings")
 			for _, e := range c.list(les) {
 				if name, ok := walletExtensions[e.Name()]; ok && e.IsDir() {
-					c.add("DV-202", filepath.Join(les, e.Name()), name+" 확장 프로그램 저장소 ("+root.name+")")
+					found.put(name, filepath.Join(les, e.Name()))
 				}
 			}
 			idb := filepath.Join(p, "IndexedDB")
@@ -259,9 +263,10 @@ func (c *walletCheck) extensions(d appDirs) {
 				id, ok := strings.CutPrefix(e.Name(), "chrome-extension_")
 				id, _, _ = strings.Cut(id, "_")
 				if name := walletExtensions[id]; ok && name != "" && e.IsDir() {
-					c.add("DV-202", filepath.Join(idb, e.Name()), name+" 확장 프로그램 저장소 ("+root.name+")")
+					found.put(name, filepath.Join(idb, e.Name()))
 				}
 			}
+			c.addStores(p, root.name, found)
 		}
 	}
 	for _, root := range firefoxRoots(d) {
@@ -274,6 +279,48 @@ func (c *walletCheck) extensions(d appDirs) {
 				c.firefoxProfile(filepath.Join(root.path, e.Name()))
 			}
 		}
+	}
+}
+
+// profileStores are the store folders found in one browser profile, by
+// wallet, in the order the wallets were first met.
+type profileStores struct {
+	wallets []string
+	folders map[string][]string
+}
+
+func (s *profileStores) put(wallet, folder string) {
+	if s.folders == nil {
+		s.folders = map[string][]string{}
+	}
+	if _, ok := s.folders[wallet]; !ok {
+		s.wallets = append(s.wallets, wallet)
+	}
+	s.folders[wallet] = append(s.folders[wallet], folder)
+}
+
+// addStores reports each wallet found in one profile once, at the profile
+// folder: a wallet keeps several folders there and they are one thing to
+// take. The folders are listed in the evidence, as paths below the profile.
+// The fingerprint is of the wallet in the profile, not of the folders found.
+func (c *walletCheck) addStores(profile, browser string, found profileStores) {
+	for _, wallet := range found.wallets {
+		var rel []string
+		for _, f := range found.folders[wallet] {
+			if c.skipped(f) {
+				continue
+			}
+			r, err := filepath.Rel(profile, f)
+			if err != nil {
+				r = filepath.Base(f)
+			}
+			rel = append(rel, filepath.ToSlash(r))
+		}
+		if len(rel) == 0 {
+			continue
+		}
+		what := wallet + " 확장 프로그램 저장소 (" + browser + ")"
+		c.add("DV-202", profile, what, fmt.Sprintf("%s. 이 프로필에서 찾은 폴더 %d개: %s", what, len(rel), strings.Join(rel, ", ")))
 	}
 }
 
@@ -297,6 +344,7 @@ func (c *walletCheck) firefoxProfile(p string) {
 	}
 	store := filepath.Join(p, "storage", "default")
 	var stores []fs.DirEntry
+	var found profileStores
 	for _, id := range sortedNames(firefoxWallets) {
 		u := uuids[id]
 		if u == "" {
@@ -307,10 +355,11 @@ func (c *walletCheck) firefoxProfile(p string) {
 		}
 		for _, e := range stores {
 			if e.IsDir() && strings.HasPrefix(e.Name(), "moz-extension+++"+u) {
-				c.add("DV-202", filepath.Join(store, e.Name()), firefoxWallets[id]+" 확장 프로그램 저장소 (Firefox)")
+				found.put(firefoxWallets[id], filepath.Join(store, e.Name()))
 			}
 		}
 	}
+	c.addStores(p, "Firefox", found)
 }
 
 func sortedNames(m map[string]string) []string {
@@ -347,8 +396,16 @@ func firefoxUUIDs(prefs []byte) (map[string]string, error) {
 }
 
 // desktopWallets looks whether the key stores of desktop wallets are there.
-// Nothing in them is opened.
+// Nothing in them is opened. A wallet with files in several of its places
+// (Bitcoin Core: wallet.dat and wallets) is one finding at the first of
+// them; the others are listed in the evidence.
 func (c *walletCheck) desktopWallets(d appDirs) {
+	type found struct {
+		id, path, what string
+		others         []string
+	}
+	var order []*found
+	byWallet := map[string]*found{}
 	for _, w := range walletPlaces(d) {
 		st, err := os.Lstat(w.path)
 		if err != nil {
@@ -357,15 +414,15 @@ func (c *walletCheck) desktopWallets(d appDirs) {
 			}
 			continue
 		}
-		what := " 키 저장 위치"
-		if w.id == "DV-204" {
-			what = " 키 파일 자리(잠그지 않고 저장하는 것이 기본)"
+		if c.skipped(w.path) {
+			continue
 		}
+		link := ""
 		switch kindOf(w.path, st) {
 		case kindLink:
 			// A wallet's folder moved to another drive behind a link or a
 			// junction is still there to take.
-			what += ", 링크라서 따라가지 않음"
+			link = ", 링크라서 따라가지 않음"
 		case kindDir:
 			if len(c.list(w.path)) == 0 {
 				continue
@@ -374,7 +431,25 @@ func (c *walletCheck) desktopWallets(d appDirs) {
 		default:
 			continue
 		}
-		c.add(w.id, w.path, w.name+what)
+		key := w.id + "\x00" + w.name
+		if f := byWallet[key]; f != nil {
+			f.others = append(f.others, c.shown(w.path)+link)
+			continue
+		}
+		what := " 키 저장 위치"
+		if w.id == "DV-204" {
+			what = " 키 파일 자리(잠그지 않고 저장하는 것이 기본)"
+		}
+		f := &found{id: w.id, path: w.path, what: w.name + what + link}
+		byWallet[key] = f
+		order = append(order, f)
+	}
+	for _, f := range order {
+		evidence := f.what
+		if len(f.others) > 0 {
+			evidence += fmt.Sprintf(". 같은 지갑의 다른 위치 %d곳: %s", len(f.others), strings.Join(f.others, ", "))
+		}
+		c.add(f.id, f.path, f.what, evidence)
 	}
 }
 
@@ -550,7 +625,7 @@ func (c *walletCheck) file(path string) {
 	clear(b)
 	switch look {
 	case seedFound:
-		c.add("DV-201", path, seedEvidence)
+		c.add("DV-201", path, seedEvidence, seedEvidence)
 	case seedPublicOnly:
 		c.public++
 	}

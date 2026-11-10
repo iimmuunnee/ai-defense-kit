@@ -115,12 +115,13 @@ func TestFindsWalletExtensionStores(t *testing.T) {
 			mkdir(t, at(c.firefox, "abcd.default-release", "storage", "default", "moz-extension+++9a9a9a9a-1111-2222-3333-444444444444"))
 
 			r := wallets(t, home)
+			// The place of a finding is the profile folder.
 			wantPlaces(t, r, "DV-202",
-				"~/"+c.chrome+"/Default/Local Extension Settings/"+metamaskID,
-				"~/"+c.chrome+"/Profile 1/IndexedDB/chrome-extension_"+phantomID+"_0.indexeddb.leveldb",
-				"~/"+c.edge+"/Default/Local Extension Settings/"+rabbyID,
-				"~/"+c.opera+"/Local Extension Settings/"+metamaskID,
-				"~/"+c.firefox+"/abcd.default-release/storage/default/moz-extension+++0f0f0f0f-1111-2222-3333-444444444444^userContextId=4294967295",
+				"~/"+c.chrome+"/Default",
+				"~/"+c.chrome+"/Profile 1",
+				"~/"+c.edge+"/Default",
+				"~/"+c.opera,
+				"~/"+c.firefox+"/abcd.default-release",
 			)
 			if len(r.Unread) != 0 {
 				t.Errorf("unread: %q", r.Unread)
@@ -134,8 +135,14 @@ func TestFindsWalletExtensionStores(t *testing.T) {
 			for _, f := range r.Findings {
 				names = append(names, f.Evidence)
 			}
+			for _, want := range []string{"Local Extension Settings/" + metamaskID, "IndexedDB/chrome-extension_" + phantomID + "_0.indexeddb.leveldb",
+				"storage/default/moz-extension+++0f0f0f0f-1111-2222-3333-444444444444^userContextId=4294967295"} {
+				if !strings.Contains(strings.Join(names, "\n"), want) {
+					t.Errorf("no finding lists the folder %q: %q", want, names)
+				}
+			}
 			for _, want := range []string{"MetaMask 확장 프로그램 저장소 (Chrome)", "Phantom 확장 프로그램 저장소 (Chrome)", "Rabby 확장 프로그램 저장소 (Edge)", "MetaMask 확장 프로그램 저장소 (Opera)", "MetaMask 확장 프로그램 저장소 (Firefox)"} {
-				if !slices.Contains(names, want) {
+				if !slices.ContainsFunc(names, func(n string) bool { return strings.HasPrefix(n, want+". ") }) {
 					t.Errorf("no finding says %q: %q", want, names)
 				}
 			}
