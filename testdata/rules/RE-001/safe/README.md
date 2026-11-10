@@ -1,0 +1,1 @@
+`VITE_STRIPE_SECRET_KEY`처럼 쓰면 안 됩니다.

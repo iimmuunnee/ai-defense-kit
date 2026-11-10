@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "notice": "이 파일은 점검 기록입니다. 해시는 파일이 바뀌었는지 확인하는 용도이며 위변조를 막지 않습니다. 기준 충족을 증명하지 않으며 법률 자문이 아닙니다.",
+  "kind": "assets",
+  "target": "example.test",
+  "untrusted": false,
+  "known_list": "known.txt",
+  "scanned_at": "2026-11-04T09:30:00Z",
+  "tool": {
+    "name": "adk",
+    "version": "v0.4.0",
+    "components": []
+  },
+  "git": {
+    "commit": "",
+    "dirty": "unknown"
+  },
+  "data": {
+    "rules": null,
+    "mappings": {
+      "origin": "builtin",
+      "sha256": "bbbb",
+      "count": 14,
+      "items": []
+    }
+  },
+  "external_data": [
+    {
+      "name": "crt.sh",
+      "mode": "online",
+      "status": "used",
+      "fetched_at": "2026-11-04T09:29:00Z"
+    }
+  ],
+  "checks": [
+    {
+      "name": "assets",
+      "status": "ok",
+      "error": "",
+      "warnings": [
+        "crt.sh 결과가 10000행 한도에 닿아 일부만 받았을 수 있습니다. --exclude-expired로 다시 확인해 보세요."
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "fingerprint": "be4b38309d280d67",
+      "id": "AS-002",
+      "kind": "",
+      "severity": "info",
+      "exploited": false,
+      "location": "api.example.test",
+      "mapping_ids": [
+        "ISMSP-2.6.1"
+      ]
+    },
+    {
+      "fingerprint": "128721d874aa0b51",
+      "id": "AS-002",
+      "kind": "",
+      "severity": "info",
+      "exploited": false,
+      "location": "dev.example.test",
+      "mapping_ids": [
+        "ISMSP-2.6.1"
+      ]
+    }
+  ],
+  "ignored": [],
+  "reports": [
+    {
+      "file": "adk-report.md",
+      "sha256": "abc123"
+    }
+  ],
+  "signature": null
+}

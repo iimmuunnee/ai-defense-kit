@@ -1,0 +1,12 @@
+{
+  // 훈련 D5 예제입니다. 명령은 문구를 출력할 뿐이며 실행할 필요가 없습니다.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "prepare",
+      "type": "shell",
+      "command": "echo adk-drill-d5",
+      "runOptions": { "runOn": "folderOpen" }
+    }
+  ]
+}

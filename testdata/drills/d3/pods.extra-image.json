@@ -1,0 +1,255 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "metadata": {
+    "resourceVersion": ""
+  },
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "web-7d4b9c6f5-abcde",
+        "namespace": "default",
+        "labels": {
+          "app": "web-7d4b9c6f5",
+          "pod-template-hash": "7d4b9c6f5"
+        },
+        "creationTimestamp": "2026-11-06T08:59:00Z",
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "kind": "ReplicaSet",
+            "name": "web-7d4b9c6f5",
+            "controller": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "web",
+            "image": "registry.example.com/shop/web:1.4.2",
+            "env": [
+              {
+                "name": "SYNTHETIC_TOKEN",
+                "value": "synthetic-canary-value-do-not-print"
+              }
+            ],
+            "args": [
+              "--synthetic-arg=synthetic-canary-value-do-not-print"
+            ]
+          }
+        ]
+      },
+      "status": {
+        "phase": "Running",
+        "containerStatuses": [
+          {
+            "name": "web",
+            "image": "registry.example.com/shop/web:1.4.2",
+            "imageID": "docker-pullable://registry.example.com/shop/web@sha256:9cd488b835f3f6a8805a08fc8e3d6b6e18213ad48d371c898fee66e4279b5986",
+            "ready": true,
+            "restartCount": 0,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-06T09:00:00Z"
+              }
+            }
+          }
+        ],
+        "ephemeralContainerStatuses": [
+          {
+            "name": "debugger",
+            "image": "docker.io/library/busybox:1.36",
+            "imageID": "docker-pullable://docker.io/library/busybox@sha256:decb4a88adbe0213af030ca5048f7fdef85ba2cf8469e0b96a54f80247ca8078",
+            "ready": true,
+            "restartCount": 0,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-06T09:00:00Z"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "web-7d4b9c6f5-fghij",
+        "namespace": "default",
+        "labels": {
+          "app": "web-7d4b9c6f5",
+          "pod-template-hash": "7d4b9c6f5"
+        },
+        "creationTimestamp": "2026-11-06T08:59:00Z",
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "kind": "ReplicaSet",
+            "name": "web-7d4b9c6f5",
+            "controller": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "web",
+            "image": "registry.example.com/shop/web:1.4.2",
+            "env": [
+              {
+                "name": "SYNTHETIC_TOKEN",
+                "value": "synthetic-canary-value-do-not-print"
+              }
+            ],
+            "args": [
+              "--synthetic-arg=synthetic-canary-value-do-not-print"
+            ]
+          }
+        ]
+      },
+      "status": {
+        "phase": "Running",
+        "containerStatuses": [
+          {
+            "name": "web",
+            "image": "registry.example.com/shop/web:1.4.2",
+            "imageID": "docker-pullable://registry.example.com/shop/web@sha256:9cd488b835f3f6a8805a08fc8e3d6b6e18213ad48d371c898fee66e4279b5986",
+            "ready": true,
+            "restartCount": 0,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-06T09:00:00Z"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "db-0",
+        "namespace": "default",
+        "labels": {
+          "app": "db"
+        },
+        "creationTimestamp": "2026-11-06T08:59:00Z",
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "kind": "StatefulSet",
+            "name": "db",
+            "controller": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "db",
+            "image": "registry.example.com/shop/db:15",
+            "env": [
+              {
+                "name": "SYNTHETIC_TOKEN",
+                "value": "synthetic-canary-value-do-not-print"
+              }
+            ],
+            "args": [
+              "--synthetic-arg=synthetic-canary-value-do-not-print"
+            ]
+          }
+        ]
+      },
+      "status": {
+        "phase": "Running",
+        "containerStatuses": [
+          {
+            "name": "db",
+            "image": "registry.example.com/shop/db:15",
+            "imageID": "docker-pullable://registry.example.com/shop/db@sha256:2fd44b07dc661cf56c3bbd8294f20dc59599a642ef8b225a9886636834160b32",
+            "ready": true,
+            "restartCount": 0,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-06T09:00:00Z"
+              }
+            }
+          }
+        ],
+        "initContainerStatuses": [
+          {
+            "name": "init-perms",
+            "image": "registry.example.com/shop/tools:1",
+            "imageID": "docker-pullable://registry.example.com/shop/tools@sha256:fd4b0e081130050f570f672bff393f362006da7187e941ee8f4547f3ca59e965",
+            "ready": true,
+            "restartCount": 0,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-06T09:00:00Z"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "name": "node-agent-x7k2p",
+        "namespace": "kube-system",
+        "labels": {
+          "app": "node-agent"
+        },
+        "creationTimestamp": "2026-11-06T08:59:00Z",
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "kind": "DaemonSet",
+            "name": "node-agent",
+            "controller": true
+          }
+        ]
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "agent",
+            "image": "registry.example.com/infra/agent:2",
+            "env": [
+              {
+                "name": "SYNTHETIC_TOKEN",
+                "value": "synthetic-canary-value-do-not-print"
+              }
+            ],
+            "args": [
+              "--synthetic-arg=synthetic-canary-value-do-not-print"
+            ]
+          }
+        ]
+      },
+      "status": {
+        "phase": "Running",
+        "containerStatuses": [
+          {
+            "name": "agent",
+            "image": "registry.example.com/infra/agent:2",
+            "imageID": "docker-pullable://registry.example.com/infra/agent@sha256:0cad05a1ecef177c5e4f567d134d1e929c49018d627da4008b80261d2dae6dd6",
+            "ready": true,
+            "restartCount": 0,
+            "state": {
+              "running": {
+                "startedAt": "2026-11-06T09:00:00Z"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+id: CIIP-WEB-IL
+name: "주통기 웹 IL 정보 누출"
+clause: "Chapter 10 Web Application(웹) 5. IL (중요도 상, 708쪽)"
+source_url: https://www.kisa.or.kr/2060204/form?postSeq=22
+source_version: "KISA 2026 주요정보통신기반시설 기술적 취약점 분석·평가 방법 상세가이드 (2025-12-24 게시)"
+summary_ko: "웹 애플리케이션에서 개인정보·금융정보 같은 중요 정보와, 서버 구조를 알 수 있는 불필요한 정보(주석 속 디버깅 정보, 초기 샘플 페이지, 백업 파일 등)가 노출되는지 점검한다."
+review:
+  status: checked
+  checked_by: "Claude (AI)"
+  checked_at: 2026-11-04
+  quote: "웹 애플리케이션 내 중요 정보(개인정보, 금융 정보 등) 및 불필요한 정보(주석 내 디버깅 정보, 초기 샘플페이지, 백업 파일 등)의 노출 여부 점검"

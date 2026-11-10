@@ -1,0 +1,26 @@
+# 확인함: Supabase 공식 문서 (supabase/supabase 저장소, 2026-11-04)
+#   apps/docs/content/guides/getting-started/api-keys.mdx 103행: secret 키는 "Never put one in a browser, a shipped application, or source control."
+#   api-keys.mdx 113행: secret 키를 브라우저에서 쓰면 HTTP 401이 돌아옴
+#   apps/docs/content/guides/auth/users.mdx 113행: "Never expose it in a browser or any publicly accessible client."
+#   (기본 브랜치 master, 참고 URL은 위 두 파일의 주소)
+# 확인 필요: Next.js의 `"use client"` 지시문 동작은 Next.js 공식 문서에서 이 작업 중 직접 열어 확인하지 못함.
+# 확인 필요: 파일 안에 `use client`라는 글자가 한 번이라도 나오면(주석, 문자열 포함) 클라이언트 컴포넌트로 보므로 오탐이 날 수 있음.
+# 확인 필요: 클라이언트 컴포넌트가 비밀 키를 다른 파일(import한 모듈)에서 읽는 경우는 놓침. `NEXT_PUBLIC_` 없는 환경 변수는 브라우저 번들에 들어가지 않아 값이 비는 것이 보통이지만, 코드가 브라우저 쪽에서 비밀 키를 쓰려는 것 자체를 위험 신호로 봄.
+id: SB-003
+title: 클라이언트 컴포넌트에서 Supabase 비밀 키 사용
+stacks: [nextjs]
+severity: high
+match:
+  scope: file
+  files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
+  require_all: ["use client"]
+  has_any: ["SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY", "sb_secret_"]
+explain: explain/SB-003.md
+fix: fixes/SB-003/
+mappings: [ISMSP-2.5.5, ISMSP-2.10.2]
+confidence: medium
+references:
+  - url: https://github.com/supabase/supabase/blob/master/apps/docs/content/guides/getting-started/api-keys.mdx
+    checked_at: 2026-11-04
+  - url: https://github.com/supabase/supabase/blob/master/apps/docs/content/guides/auth/users.mdx
+    checked_at: 2026-11-04

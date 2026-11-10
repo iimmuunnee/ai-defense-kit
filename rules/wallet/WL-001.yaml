@@ -1,0 +1,47 @@
+# 지갑 코드 규칙은 줄 모양만 보는 의심 신호다. 데이터 흐름이나 승인 절차는 보지 못한다.
+# 중요: 이 규칙이 읽는 줄에는 개인 키나 니모닉이 들어 있을 수 있다. `hide_values: true`이면 근거는 줄을 가려서 보여 주는 것이
+#   아니라, 걸린 이름과 그 뒤의 첫 `=`, `:`, `(` 그리고 `****`만 만든다(나머지는 버린다). 지문도 그 형태와 같은 근거의 순번에서
+#   만든다. 시험이 값을 조립해 모든 출력에서 확인한다.
+# 찾는 것: `process.env.<...PRIVATE_KEY>`, `PRIVATE_KEY=` 환경 파일 줄, `privateKeyToAccount(`·`new Wallet(`에
+#   환경 변수나 문자열 상수를 바로 넘기는 줄, 키처럼 생긴 상수를 대입한 줄.
+# 한계: `new Wallet(key)`처럼 변수를 넘기면 어디서 온 값인지 몰라 찾지 못한다.
+# 제외: 배포 도구와 시험 코드. `scripts`, `script`, `deploy`, `test`, `tests` 폴더는 저장소 루트와 `packages/*/`,
+#   `apps/*/` 바로 아래의 것만 제외하고(`src/services/test/`나 `app/api/deploy/`는 본다), `__tests__` 폴더,
+#   hardhat·truffle 설정, *.test.*, *.spec.*, .env.example 계열은 어디에 있든 제외한다. 설명에도 적는다.
+id: WL-001
+title: 개인 키나 니모닉을 코드나 환경 파일에서 직접 읽음
+stacks: [web3]
+severity: high
+hide_values: true
+match:
+  scope: line
+  files: ["**/.env*", "**/*.{js,jsx,ts,tsx,mjs,cjs}"]
+  exclude_files:
+    - "**/hardhat.config.*"
+    - "**/truffle-config.*"
+    - "{,packages/*/,apps/*/}scripts/**"
+    - "{,packages/*/,apps/*/}script/**"
+    - "{,packages/*/,apps/*/}deploy/**"
+    - "{,packages/*/,apps/*/}test/**"
+    - "{,packages/*/,apps/*/}tests/**"
+    - "**/__tests__/**"
+    - "**/*.test.*"
+    - "**/*.spec.*"
+    - "**/.env.example"
+    - "**/.env.sample"
+    - "**/.env.template"
+    - "**/.env.test"
+  regex_requires: ["PRIVATE_KEY", "PRIV_KEY", "MNEMONIC", "SEED_PHRASE", "privateKey", "private_key", "mnemonic", "Mnemonic", "Wallet", "fromPhrase", "fromMnemonic"]
+  has_any_regex:
+    - '(?:process\.env|import\.meta\.env)(?:\.|\[\s*["''`])[A-Za-z0-9_]*(?:PRIVATE_KEY|PRIV_KEY|MNEMONIC|SEED_PHRASE)'
+    - '\b(?:privateKeyToAccount|mnemonicToAccount|fromMnemonic|fromPhrase)\s*\(\s*(?:process\.env|import\.meta\.env|["''`])'
+    - '\bnew\s+(?:[A-Za-z_$][A-Za-z0-9_$]*\.)?Wallet\s*\(\s*(?:process\.env|import\.meta\.env|["''`])'
+    - '^\s*(?:export\s+)?[A-Z0-9_]*(?:PRIVATE_KEY|PRIV_KEY|MNEMONIC|SEED_PHRASE)\s*=\s*[^\s#]'
+    - '(?:PRIVATE_KEY|PRIV_KEY|privateKey|private_key|MNEMONIC|mnemonic)["'']?\s*[:=]\s*["''`](?:0x[0-9a-fA-F]{32,}|[0-9a-fA-F]{64}|(?:[a-z]+\s+){11}[a-z]+)'
+  skip_line_regex:
+    - '^\s*(?:#|//|/\*|\*)'
+    # 예시 줄. `replace`나 `change`는 구문의 첫 단어일 수 있어 `_`, `-`가 붙을 때만 예시로 본다.
+    - '=\s*["'']?(?:\$\{|<|your[_ -]|YOUR[_ -]|xxx|XXX|change[_-]?me|CHANGE[_-]?ME|\.\.\.|replace[_-]|REPLACE[_-])'
+explain: explain/WL-001.md
+fix: fixes/WL-001/
+confidence: medium

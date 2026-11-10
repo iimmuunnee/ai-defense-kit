@@ -1,0 +1,3 @@
+# 설정
+
+`NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` 같은 이름은 쓰지 마세요.

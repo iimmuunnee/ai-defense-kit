@@ -1,0 +1,16 @@
+# 확인함 (2026-11-05): React 공식 문서는 신뢰할 수 없는 HTML을 넣으면 XSS 위험이 있다고 경고한다.
+# 참고: 쓴 곳만 찾는다. 넣는 값이 어디서 오는지는 따라가지 않아 위험 여부를 판단하지 못한다.
+id: RE-003
+title: dangerouslySetInnerHTML 사용 - 넣는 값을 확인하세요 (참고)
+stacks: [react, nextjs]
+severity: low
+match:
+  scope: file
+  files: ["**/*.{js,jsx,ts,tsx,mjs,cjs}"]
+  has_any: ["dangerouslySetInnerHTML"]
+explain: explain/RE-003.md
+fix: fixes/RE-003/
+confidence: low
+references:
+  - url: https://react.dev/reference/react-dom/components/common
+    checked_at: 2026-11-05

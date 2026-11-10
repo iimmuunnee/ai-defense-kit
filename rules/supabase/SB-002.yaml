@@ -1,0 +1,30 @@
+# 확인함: Supabase 공식 문서 (supabase/supabase 저장소, 2026-11-04)
+#   apps/docs/content/guides/getting-started/api-keys.mdx
+#   - 103행 "A secret key bypasses every Row Level Security policy you have. Never put one in a browser, a shipped application, or source control."
+#   - 121-127행 환경 변수 예시: `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...`(공개용), 서버 전용 `SUPABASE_SECRET_KEY=sb_secret_...` ("Never prefix these, or your bundler will ship the key")
+#   - 레거시 키는 `anon`(publishable에 해당), `service_role`(secret에 해당)
+#   apps/docs/content/guides/auth/users.mdx 113행: secret 키는 "Never expose it in a browser or any publicly accessible client."
+#   (기본 브랜치 master, 참고 URL은 위 두 파일의 주소)
+# 확인 필요: Next.js가 `NEXT_PUBLIC_` 접두사 변수를 브라우저 번들에 넣는 동작은 Next.js 공식 문서에서 이 작업 중 직접 열어 확인하지 못함. Supabase 문서의 "your bundler will ship the key" 문장만 근거로 삼음.
+# 확인 필요: 이 규칙은 이름만 봄. 값이 실제 키인지는 보지 않으므로 `.env.example`의 빈 칸/예시 값도 걸림.
+# 참고: `NEXT_PUBLIC_` 뒤에 SECRET 또는 SERVICE_ROLE이 들어간 이름은 Supabase가 아니어도(예: NEXT_PUBLIC_STRIPE_SECRET_KEY) 걸림. 비밀 키는 어디서든 NEXT_PUBLIC_에 넣으면 안 되므로 의도한 동작임.
+# 참고: `.env*` 파일, JS/TS 코드 파일, `next.config.*`만 읽음. README 같은 문서에 이름만 나오는 경우는 보지 않음.
+#   이 파일들 안에서는 어디서든(주석 포함) 이름이 나오면 걸림.
+id: SB-002
+title: 브라우저용 환경 변수에 Supabase 비밀 키
+stacks: [nextjs]
+severity: critical
+match:
+  scope: file
+  files: ["**/.env*", "**/*.{js,jsx,ts,tsx,mjs,cjs}", "**/next.config.*"]
+  has_any_regex:
+    - 'NEXT_PUBLIC_[A-Z0-9_]*(SERVICE_ROLE|SECRET)[A-Z0-9_]*'
+explain: explain/SB-002.md
+fix: fixes/SB-002/
+mappings: [ISMSP-2.5.5, ISMSP-2.10.2, PIPC-SAFE-6-3]
+confidence: high
+references:
+  - url: https://github.com/supabase/supabase/blob/master/apps/docs/content/guides/getting-started/api-keys.mdx
+    checked_at: 2026-11-04
+  - url: https://github.com/supabase/supabase/blob/master/apps/docs/content/guides/auth/users.mdx
+    checked_at: 2026-11-04

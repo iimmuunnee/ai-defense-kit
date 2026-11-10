@@ -1,0 +1,11 @@
+id: ISMSP-1.2.1
+name: "ISMS-P 1.2.1 정보자산 식별"
+clause: "1.2.1"
+source_url: https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000244750
+source_version: "개인정보보호위원회고시 제2024-8호 (2024. 7. 24. 일부개정) 별표 7"
+summary_ko: "정보자산 분류기준을 세워 관리체계 범위 안의 모든 정보자산을 식별·분류하고, 중요도를 매긴 뒤 그 목록을 최신으로 관리해야 한다."
+review:
+  status: checked
+  checked_by: "Claude (AI)"
+  checked_at: 2026-11-04
+  quote: "조직의 업무특성에 따라 정보자산 분류기준을 수립하여 관리체계 범위 내 모든 정보자산을 식별ㆍ분류하고, 중요도를 산정한 후 그 목록을 최신으로 관리하여야 한다."

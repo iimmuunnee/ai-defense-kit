@@ -1,0 +1,11 @@
+id: PIPC-SAFE-6-3
+name: "개인정보의 안전성 확보조치 기준 제6조(접근통제)"
+clause: "제6조 제3항"
+source_url: https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000281400
+source_version: "개인정보보호위원회고시 제2026-9호 (2026. 7. 1. 일부개정, 시행 2026. 7. 1.)"
+summary_ko: "개인정보가 인터넷 홈페이지, P2P, 공유설정 등을 통해 권한 없는 자에게 공개되거나 유출되지 않도록 개인정보처리시스템 등에 조치해야 한다."
+review:
+  status: checked
+  checked_by: "Claude (AI)"
+  checked_at: 2026-11-04
+  quote: "개인정보처리자는 처리하는 개인정보가 인터넷 홈페이지, P2P, 공유설정 등을 통하여 권한이 없는 자에게 공개되거나 유출되지 않도록 개인정보처리시스템, 개인정보취급자의 컴퓨터 및 모바일 기기 등에 조치를 하여야 한다."

@@ -1,0 +1,43 @@
+# 확인함: PHP 매뉴얼은 임의 입력을 SQL 문에 이어 붙이는 것을 원인으로 들고 prepared statement를 권한다.
+# 참고: 입력이 같은 줄에 바로 들어가는 경우만 찾는다. 변수에 담아 다른 줄에서 쓰면 찾지 못한다. 구문 분석기가 아니라 줄 단위 추정이다.
+# 인자 부분: 문자열, 괄호 쌍(두 겹까지), 안으로 들어가는 여는 괄호만 지나가므로 호출을 닫는 `)`와 문자열 밖의 `;`를 넘지 않는다.
+#   한계: 입력 앞에 세 겹 이상 닫힌 괄호가 있으면 놓치고, 문자열 안의 `\"`나 짝이 안 맞는 따옴표가 있으면 어긋날 수 있다.
+# 함수 이름과 SQL만 대소문자를 가리지 않는다. PHP의 슈퍼글로벌은 대소문자를 가리므로 `$_get`은 입력으로 보지 않는다.
+# SQL 문자열은 따옴표 바로 뒤에 SQL 동사가 오고 `SELECT ... FROM `, `INSERT INTO `, `UPDATE x SET `, `DELETE FROM ` 모양일 때만 본다.
+#   한계: `"Select a category from the list: "`, `<input value="delete from cart" ...>`처럼 따옴표 바로 뒤의 글은 잘못 찾을 수 있다. 의심 등급이라 받아들인다.
+# 가리는 것: 숫자 변환과 이스케이프 호출, `(int)$_GET[...]`, 상수 문자열만 넘기는 `->prepare(...)`,
+#   상수 문자열 뒤에 쉼표로 값을 따로 넘기는 `->query`, `->prepare`, `execute_query`, `pg_query_params`, `DB::...`의 값 부분.
+#   값 부분은 그 호출의 닫는 괄호까지만 가리고(안쪽 괄호 한 겹까지) SQL 문자열은 남겨, 뒤에 이어 붙인 입력을 찾는다.
+#   한계: 값 안에 괄호가 두 겹 이상이면 가리지 않아 잘못 찾을 수 있고, `f($db->query("SELECT a FROM t", [$b]), 입력)`처럼 호출 뒤의 다른 인자도 잘못 찾을 수 있다.
+#   한계: `executeQuery`, `fetchAllAssociative`, `->select`, `$db->run` 같은 다른 값 분리 API는 잘못 찾는다. `sprintf("SELECT ...", 입력)`까지 가리게 되므로 모든 호출로 넓히지 않았다.
+#   한계: `addslashes`, `mysql_real_escape_string`, `$db->escape`는 가리지 않는다. 문자열 안의 `"floatval(" . 입력`은 가려서 놓친다.
+#   한계: `"(SELECT`, `INSERT IGNORE INTO`, `REPLACE INTO`, `UPDATE t1, t2 SET`, `UPDATE LOW_PRIORITY t SET`, SQL 문자열 안의 `;`나 `\n`, `->multi_query(입력)`은 놓친다.
+#   한계: 변환 호출은 안쪽에 괄호가 없을 때만 가린다. 이스케이프가 그 문맥에 맞는지(따옴표 없는 곳의 `esc_sql` 등)는 보지 않는다.
+#   한계: `->get_results` 외의 WordPress 조회 메서드(`get_row`, `get_var`, `get_col`)는 SQL 문자열 모양일 때만 찾는다.
+# 문장 끝(`;`, `{`, `}`)이나 여는 태그 바로 뒤의 `//`, `#` 주석은 가린다. 문자열 안의 `; #`도 주석으로 보므로 그 뒤의 입력을 놓친다.
+id: PH-003
+title: SQL 문에 사용자 입력이 바로 들어감
+stacks: [php]
+severity: high
+match:
+  scope: line
+  files: ["**/*.php", "**/*.phtml"]
+  regex_requires: ["$_"]
+  has_any_regex:
+    - '(?:\b(?i:mysqli_query|mysql_query|pg_query|sqlite_query|sql_query)|->\s*(?i:query|exec|get_results))\s*\((?:[^()"'';]|"[^"]*"|''[^'']*''|\((?:[^()]|\([^()]*\))*\)|\()*(?:"[^"]*)?\$_(?:GET|POST|REQUEST|COOKIE)\b'
+    - '["'']\s*(?i:SELECT\s[^;]*?\sFROM\s|INSERT\s+INTO\s|UPDATE\s+\S+\s+SET\s|DELETE\s+FROM\s)(?:[^;?]|\?[^>])*\$_(?:GET|POST|REQUEST|COOKIE)\b'
+  mask_regex:
+    - '(?:[;{}]|<\?(?i:php)?)\s*(?://|#).*'
+    - '\b(?i:intval|floatval|absint|esc_sql|mysqli_real_escape_string|pg_escape_string|pg_escape_literal)\s*\([^()]*\)'
+    - '->\s*(?i:real_escape_string|quote)\s*\([^()]*\)'
+    - '\(\s*(?i:int|integer|float)\s*\)\s*\$_\w+\[[^\]]*\]'
+    - '->\s*(?i:prepare)\s*\(\s*(?:"[^"$]*"|''[^'']*'')\s*\)'
+    - '(?P<keep>(?i:->\s*query|->\s*prepare|execute_query|pg_query_params|DB::\w+)\s*\(\s*(?:\$\w+\s*,\s*)?(?:"[^"$]*"|''[^'']*''))\s*,(?:[^()"'']|"[^"]*"|''[^'']*''|\([^()]*\))*\)'
+  skip_line_regex:
+    - '^\s*(?://|#|\*|/\*)'
+explain: explain/PH-003.md
+fix: fixes/PH-003/
+confidence: medium
+references:
+  - url: https://www.php.net/manual/en/security.database.sql-injection.php
+    checked_at: 2026-11-06

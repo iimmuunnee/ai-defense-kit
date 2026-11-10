@@ -1,0 +1,30 @@
+# 확인함: PHP 매뉴얼은 name이 클라이언트의 원래 파일 이름이라고 설명하고, 예제에서 basename을 쓴다. name을 믿지 말라는 직접 문장은 없다.
+# 참고: 입력이 같은 줄에 바로 들어가는 경우만 찾는다. 변수에 담아 다른 줄에서 쓰면 찾지 못한다. 구문 분석기가 아니라 줄 단위 추정이다.
+# 인자 부분: 문자열, 괄호 쌍(두 겹까지), 안으로 들어가는 여는 괄호만 지나가므로 호출을 닫는 `)`와 문자열 밖의 `;`를 넘지 않는다.
+#   한계: 입력 앞에 세 겹 이상 닫힌 괄호가 있으면 놓치고, 문자열 안의 `\"`나 짝이 안 맞는 따옴표가 있으면 어긋날 수 있다.
+# `move_uploaded_file(...)` 호출의 인자 안에 있는 `name`만 본다. 호출이 끝난 뒤 이름을 출력하는 코드는 찾지 않는다.
+# `md5(...)`, `sanitize_file_name(...)`는 안쪽에 괄호가 없을 때만 가린다. `md5(uniqid() . 이름)`은 잘못 찾을 수 있다.
+#   한계: 따옴표 없는 `$_FILES[f][name]`은 놓친다.
+# 한계: 확장자를 이름에서 그대로 가져오는 코드(`md5(이름) . '.' . pathinfo(...)`)가 위험한지는 보지 않는다.
+id: PH-005
+title: 업로드 파일 이름을 그대로 저장함
+stacks: [php]
+severity: high
+match:
+  scope: line
+  files: ["**/*.php", "**/*.phtml"]
+  regex_requires: ["$_"]
+  has_any_regex:
+    - '\b(?i:move_uploaded_file)\s*\((?:[^()"'';]|"[^"]*"|''[^'']*''|\((?:[^()]|\([^()]*\))*\)|\()*(?:"[^"]*)?\$_FILES\[[^\]]*\]\s*\[\s*["'']name["'']\s*\]'
+  mask_regex:
+    - '\b(?i:md5|sanitize_file_name)\s*\([^()]*\)'
+  skip_line_regex:
+    - '^\s*(?://|#|\*|/\*)'
+explain: explain/PH-005.md
+fix: fixes/PH-005/
+confidence: medium
+references:
+  - url: https://www.php.net/manual/en/features.file-upload.post-method.php
+    checked_at: 2026-11-06
+  - url: https://www.php.net/manual/en/function.move-uploaded-file.php
+    checked_at: 2026-11-06

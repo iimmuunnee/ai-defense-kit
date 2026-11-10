@@ -1,0 +1,17 @@
+# 시험용 예제입니다. pull_request_target에서 PR의 코드를 내려받는 모양입니다.
+name: pr-check
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - run: ./check.sh

@@ -1,0 +1,35 @@
+# 확인함: FastAPI 공식 문서 (fastapi/fastapi 저장소 master, 2026-11-04)
+#   docs/en/docs/tutorial/cors.md 27-31행: 목록을 "*"로 선언하면 쿠키·Authorization 헤더 같은 자격 증명이 걸린 통신은 제외된다.
+#   같은 파일 62행: "None of `allow_origins`, `allow_methods` and `allow_headers` can be set to `['*']` if `allow_credentials` is set to `True`. All of them must be explicitly specified."
+# 확인함: Starlette 문서 (encode/starlette 저장소 master) docs/middleware.md 169행: allow_credentials를 쓰려면 allow_origins 등을 `['*']`로 두면 안 되고 모두 명시해야 한다.
+# 확인함: Starlette 코드 starlette/middleware/cors.py (master)는 문서 내용을 강제하지 않고 요청 Origin을 그대로 되돌려 준다.
+#   35행 `allow_all_origins = "*" in allow_origins`, 94-95행 모든 Origin 허용,
+#   162-164행·175-177행 allow_all_origins와 allow_credentials가 둘 다 참이면 Access-Control-Allow-Origin을 요청 Origin으로 설정하고,
+#   42-43행·61-62행에서 Access-Control-Allow-Credentials: true를 추가한다. 생성 시점에 예외나 경고는 나오지 않는다.
+# 확인 필요: 설정 값을 변수(`origins = ["*"]`)로 넘기면 놓친다. 이 규칙은 `allow_origins=[...]` 자리에 `"*"`가 직접 적힌 경우만 본다.
+# 확인 필요: Starlette 동작은 master 기준으로 읽었다. 설치된 버전에서 같은지는 확인하지 않았다.
+# 확인 필요: `allow_origin_regex=".*"`처럼 모든 Origin에 맞는 정규식은 보지 않는다. 개념상 `"*"`만큼 위험할 수 있으나 Starlette가 이 값을 어떻게 다루는지는 근거 자료에서 확인하지 못했다. 그래서 이 규칙이 안 나와도 안전하다는 뜻이 아니다.
+# 확인 필요: 주석 처리한 `# allow_origins=["*"]`도 글자만 보므로 맞을 수 있고(오탐), 한 파일에 CORS 호출이 둘 있어 한쪽에 `"*"`, 다른 쪽에 `allow_credentials=True`가 있어도 맞는다(오탐).
+# 참고: 같은 파일에 `allow_origins=["*"]`와 `allow_credentials=True`가 둘 다 있으면 순서·줄바꿈·따옴표·공백과 상관없이 맞는다.
+#   서로 다른 미들웨어 호출에 나뉘어 있어도(드문 경우) 같은 파일이면 맞는다.
+id: FA-001
+title: CORS가 모든 사이트와 자격 증명(쿠키)을 함께 허용
+stacks: [fastapi]
+severity: high
+match:
+  scope: file
+  files: ["**/*.py"]
+  require_all: ["CORSMiddleware"]
+  has_any_regex:
+    - '(?s)(allow_origins\s*=\s*\[[^\]]*["'']\*["''][^\]]*\].*allow_credentials\s*=\s*True\b|allow_credentials\s*=\s*True\b.*allow_origins\s*=\s*\[[^\]]*["'']\*["''][^\]]*\])'
+explain: explain/FA-001.md
+fix: fixes/FA-001/
+mappings: [CIIP-WEB-CF]
+confidence: high
+references:
+  - url: https://github.com/fastapi/fastapi/blob/master/docs/en/docs/tutorial/cors.md
+    checked_at: 2026-11-04
+  - url: https://github.com/encode/starlette/blob/master/docs/middleware.md
+    checked_at: 2026-11-04
+  - url: https://github.com/encode/starlette/blob/master/starlette/middleware/cors.py
+    checked_at: 2026-11-04

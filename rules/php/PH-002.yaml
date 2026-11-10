@@ -1,0 +1,29 @@
+# 확인함: OWASP 시험 가이드가 include에 사용자 입력을 넣는 코드를 취약한 예로 든다. PHP 매뉴얼 본문에는 이 경고가 직접 없다.
+# 참고: 입력이 같은 줄에 바로 들어가는 경우만 찾는다. 변수에 담아 다른 줄에서 쓰면 찾지 못한다. 구문 분석기가 아니라 줄 단위 추정이다.
+# 문장 시작(줄 맨 앞, `;`, `{`, `}`, `(`, `)`, `<?php`, `<?`, `=`, `@`, `&&`, `||`, `else`, `return`) 뒤의 include류만 본다. `->`, `::` 뒤는 메서드이므로 찾지 않는다.
+#   `?>`와 `<`를 넘지 않으므로 HTML에 이어지는 입력 출력은 찾지 않고, `;`는 문자열 안에서만 지나간다.
+# `$pages[입력]` 같은 지도 조회는 가린다. 지도에 없는 값이 어떻게 처리되는지는 보지 않는다.
+# 한계: `=>`, `case 1:`, `if ($a):`, `$a or`, `$a and` 뒤의 include는 놓친다. `or`, `and`는 `"Name or include your id: "` 같은 문장과 구별하지 못해 넣지 않았다.
+#   한계: `$this->pages[입력]`, `$cfg['pages'][입력]`, `$pages[trim(입력)]`은 가리지 않아 잘못 찾는다. `include isset(입력) ? 'a.php' : 'b.php'`도 잘못 찾는다.
+# 문자열 안에 `; include `처럼 쓴 글과 입력이 이어지면 잘못 찾을 수 있다.
+#   `include ($a < 1 ? 'x' : 입력)`처럼 입력 앞에 `<`가 있으면 놓친다.
+id: PH-002
+title: 포함할 파일 경로에 사용자 입력이 바로 들어감
+stacks: [php]
+severity: critical
+match:
+  scope: line
+  files: ["**/*.php", "**/*.phtml"]
+  regex_requires: ["$_"]
+  has_any_regex:
+    - '(?:^|[;{}()=@]|&&|\|\||<\?(?i:php)?|\b(?i:else|return))\s*(?i:include|include_once|require|require_once)\b(?:[^;''"?<]|\?[^>]|"[^"]*"|''[^'']*'')*\??(?:"[^"]*)?\$_(?:GET|POST|REQUEST|COOKIE)\b'
+  mask_regex:
+    - '\$\w+\[\s*\$_(?:GET|POST|REQUEST|COOKIE)\[[^\]]*\]\s*\]'
+  skip_line_regex:
+    - '^\s*(?://|#|\*|/\*)'
+explain: explain/PH-002.md
+fix: fixes/PH-002/
+confidence: high
+references:
+  - url: https://wstg.owasp.org/v4.2/4-Web_Application_Security_Testing/07-Input_Validation_Testing/11.1-Testing_for_Local_File_Inclusion
+    checked_at: 2026-11-06

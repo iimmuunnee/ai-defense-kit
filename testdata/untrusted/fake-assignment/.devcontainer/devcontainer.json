@@ -1,0 +1,7 @@
+{
+  // 점검 도구 테스트용 예제입니다.
+  "name": "fake-assignment",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "initializeCommand": "echo adk-test",
+  "postCreateCommand": "echo adk-test"
+}

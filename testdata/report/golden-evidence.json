@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "notice": "이 파일은 점검 기록입니다. 해시는 파일이 바뀌었는지 확인하는 용도이며 위변조를 막지 않습니다. 기준 충족을 증명하지 않으며 법률 자문이 아닙니다.",
+  "kind": "code",
+  "target": "my-app",
+  "untrusted": false,
+  "scanned_at": "2026-11-05T16:30:00+09:00",
+  "tool": {
+    "name": "adk",
+    "version": "v0.1.0",
+    "components": [
+      {
+        "name": "osv-scanner",
+        "version": "v2.7.0"
+      },
+      {
+        "name": "gitleaks",
+        "version": "v8.30.1"
+      }
+    ]
+  },
+  "git": {
+    "commit": "0123456789abcdef0123456789abcdef01234567",
+    "dirty": "yes"
+  },
+  "data": {
+    "rules": {
+      "origin": "builtin",
+      "sha256": "aaaa",
+      "count": 12
+    },
+    "mappings": {
+      "origin": "builtin",
+      "sha256": "bbbb",
+      "count": 14,
+      "items": [
+        {
+          "id": "ISMSP-2.10.4",
+          "source_version": "2023-11",
+          "review_status": "draft"
+        }
+      ]
+    }
+  },
+  "external_data": [
+    {
+      "name": "OSV",
+      "mode": "online",
+      "status": "failed",
+      "fetched_at": null,
+      "note": "조회 실패"
+    },
+    {
+      "name": "CISA KEV",
+      "mode": "online",
+      "status": "used",
+      "fetched_at": "2026-11-05T16:29:50+09:00"
+    }
+  ],
+  "checks": [
+    {
+      "name": "rules",
+      "status": "ok",
+      "error": "",
+      "warnings": []
+    },
+    {
+      "name": "secrets",
+      "status": "ok",
+      "error": "",
+      "warnings": [
+        "git 기록이 없어 과거 커밋은 확인하지 못함"
+      ]
+    },
+    {
+      "name": "deps",
+      "status": "failed",
+      "error": "OSV 조회 실패: network unreachable",
+      "warnings": []
+    }
+  ],
+  "findings": [
+    {
+      "fingerprint": "3333cccc4444dddd",
+      "id": "SECRET-generic-api-key",
+      "kind": "",
+      "severity": "high",
+      "exploited": false,
+      "location": "config.py",
+      "mapping_ids": []
+    },
+    {
+      "fingerprint": "5555eeee6666ffff",
+      "id": "KR-PAY-002",
+      "kind": "",
+      "severity": "high",
+      "exploited": false,
+      "location": "app/webhook.py",
+      "mapping_ids": [
+        "ISMSP-2.10.4"
+      ]
+    },
+    {
+      "fingerprint": "1111aaaa2222bbbb",
+      "id": "DEP-CVE-2021-44228",
+      "kind": "",
+      "severity": "medium",
+      "exploited": false,
+      "location": "package-lock.json",
+      "mapping_ids": []
+    },
+    {
+      "fingerprint": "",
+      "id": "INFO-1",
+      "kind": "",
+      "severity": "info",
+      "exploited": false,
+      "location": "README.md",
+      "mapping_ids": []
+    }
+  ],
+  "ignored": [
+    {
+      "fingerprint": "9999aaaa9999aaaa",
+      "id": "SECRET-x",
+      "severity": "medium",
+      "location": "tests/fixture.py"
+    }
+  ],
+  "reports": [
+    {
+      "file": "adk-report.md",
+      "sha256": "abc123"
+    },
+    {
+      "file": "adk-report.json",
+      "sha256": "def456"
+    }
+  ],
+  "signature": null
+}

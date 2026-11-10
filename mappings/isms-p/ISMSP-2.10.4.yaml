@@ -1,0 +1,11 @@
+id: ISMSP-2.10.4
+name: "ISMS-P 2.10.4 전자거래 및 핀테크 보안"
+clause: "2.10.4"
+source_url: https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000244750
+source_version: "개인정보보호위원회고시 제2024-8호 (2024. 7. 24. 일부개정) 별표 7"
+summary_ko: "전자거래·핀테크 서비스는 정보유출이나 데이터 조작·사기를 막기 위해 인증·암호화 등 보호대책을 세우고, 결제시스템 등 외부 시스템과 연계할 때 안전성을 점검해야 한다."
+review:
+  status: checked
+  checked_by: "Claude (AI)"
+  checked_at: 2026-11-04
+  quote: "전자거래 및 핀테크 서비스 제공 시 정보유출이나 데이터 조작ㆍ사기 등의 침해사고 예방을 위해 인증ㆍ암호화 등의 보호대책을 수립하고, 결제시스템 등 외부 시스템과 연계할 경우 안전성을 점검하여야 한다."

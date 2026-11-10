@@ -1,0 +1,24 @@
+# 시험용 예제입니다. 점검에 걸리지 않는 모양입니다.
+name: release
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@0123456789abcdef0123456789abcdef01234567
+        with:
+          persist-credentials: false
+      - uses: aws-actions/configure-aws-credentials@89abcdef0123456789abcdef0123456789abcdef
+        with:
+          role-to-assume: arn:aws:iam::111111111111:role/example-deploy
+          aws-region: ap-northeast-2
+      - run: ./deploy.sh

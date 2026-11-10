@@ -1,0 +1,19 @@
+# 확인함 (2026-11-05): Vite 공식 문서는 `VITE_*` 변수에 API 키 같은 민감 정보를 넣지 말라고 한다.
+# 참고: 줄마다 결과를 낸다.
+# 참고: 지도나 Firebase 키처럼 공개를 전제로 하는 키도 이런 이름을 써서 의심으로 표시한다.
+# 참고: `RE-001`과 함께 걸리는 이름(`VITE_SECRET_TOKEN`)은 결과가 둘 나온다.
+id: RE-002
+title: 브라우저로 나가는 환경 변수에 토큰이나 API 키
+stacks: [react]
+severity: medium
+match:
+  scope: line
+  files: ["**/.env*", "**/*.{js,jsx,ts,tsx,mjs,cjs}", "**/vite.config.*"]
+  has_any_regex:
+    - '\b(?:VITE|REACT_APP)_[A-Z0-9_]*(?:TOKEN|API_?KEY)\b'
+explain: explain/RE-002.md
+fix: fixes/RE-002/
+confidence: low
+references:
+  - url: https://vite.dev/guide/env-and-mode
+    checked_at: 2026-11-05

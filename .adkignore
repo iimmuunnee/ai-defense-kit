@@ -1,0 +1,116 @@
+# adk 저장소를 adk로 점검할 때(adk scan . --offline) 나오는 결과 가운데 설명이 끝난 것만 적습니다.
+# 한 줄에 지문 하나. 바로 위 주석에 규칙, 위치, 이유를 적습니다. 값은 적지 않습니다.
+# 시험 파일(_test.go) 안의 키 모양 문자열은 이 목록 대신 실행 중에 조립해 파일에 남기지 않습니다.
+
+# AR-001 testdata/drills/d5/.vscode/tasks.json:0 - 자동 실행 점검 시연용으로 일부러 넣은 설정 표본
+2d4968bd46ba3b34
+# SB-002 testdata/e2e/sample-app/.env.local:2 - 점검 시연용 샘플 앱에 일부러 넣은 취약 표본
+88cfcefe587c0888
+# SB-003 testdata/e2e/sample-app/app/admin/page.tsx:8 - 점검 시연용 샘플 앱에 일부러 넣은 취약 표본
+ca90df5dddee8323
+# KR-PAY-001 testdata/e2e/sample-app/app/api/toss/webhook/route.ts:3 - 점검 시연용 샘플 앱에 일부러 넣은 취약 표본
+c57cb8b2d89afc72
+# SECRET-generic-api-key testdata/e2e/sample-app/app/config.py:3 - 점검 시연용 샘플 앱에 일부러 넣은 취약 표본
+8acf2d0dcaaeb9aa
+# KR-AUTH-001 testdata/e2e/sample-app/app/login/route.ts:5 - 점검 시연용 샘플 앱에 일부러 넣은 취약 표본
+f62a8602441d8676
+# KR-PAY-002 testdata/e2e/sample-app/app/webhook.py:6 - 점검 시연용 샘플 앱에 일부러 넣은 취약 표본
+f0a0021b9ad6f377
+# FA-002 testdata/e2e/sample-app/main.py:4 - 점검 시연용 샘플 앱에 일부러 넣은 취약 표본
+6e1688e6b77820d6
+# FA-001 testdata/e2e/sample-app/main.py:8 - 점검 시연용 샘플 앱에 일부러 넣은 취약 표본
+4af8fd9794debb30
+# FA-001 testdata/rules/FA-001/vulnerable/multiline/main.py:8 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+8a2203ecf31f6d18
+# FA-001 testdata/rules/FA-001/vulnerable/reversed/main.py:8 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+6e4db081e85d775e
+# FA-001 testdata/rules/FA-001/vulnerable/single/main.py:6 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+5545a29d76837a71
+# FA-001 testdata/rules/FA-001/vulnerable/spaced/main.py:8 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+b2207396379f35ed
+# FA-002 testdata/rules/FA-002/vulnerable/plain/main.py:3 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+88e1df530ee82866
+# FA-002 testdata/rules/FA-002/vulnerable/with_title/main.py:3 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+babc297638267050
+# KR-AUTH-001 testdata/rules/KR-AUTH-001/vulnerable/app/LoginButton.tsx:8 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+52c9f0066f317a30
+# KR-AUTH-001 testdata/rules/KR-AUTH-001/vulnerable/app/login.py:14 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+b2cd6344f7462aeb
+# KR-AUTH-001 testdata/rules/KR-AUTH-001/vulnerable/app/login.ts:5 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+8b3e42f347d9666d
+# KR-AUTH-002 testdata/rules/KR-AUTH-002/vulnerable/app/LoginButton.tsx:8 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+d851a52b96bd9ff8
+# KR-AUTH-002 testdata/rules/KR-AUTH-002/vulnerable/app/login.py:14 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+c74bca0e2f06e5f4
+# KR-AUTH-002 testdata/rules/KR-AUTH-002/vulnerable/app/login.ts:5 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+1fc63a038c72282a
+# KR-PAY-001 testdata/rules/KR-PAY-001/vulnerable/app/api/toss/deposit/route.ts:3 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+bbbe613de3190370
+# KR-PAY-001 testdata/rules/KR-PAY-001/vulnerable/app/api/toss/vbank/route.ts:1 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+45a7400c052a8d83
+# KR-PAY-001 testdata/rules/KR-PAY-001/vulnerable/app/api/toss/webhook/route.ts:3 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+1aae9c306772cd6b
+# KR-PAY-001 testdata/rules/KR-PAY-001/vulnerable/app/express_vbank.js:5 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+411fd867c4b1149c
+# KR-PAY-001 testdata/rules/KR-PAY-001/vulnerable/app/toss_vbank.py:6 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+a50031efa3690654
+# KR-PAY-001 testdata/rules/KR-PAY-001/vulnerable/app/toss_vbank_snake.py:6 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+9915135c522a7590
+# KR-PAY-001 testdata/rules/KR-PAY-001/vulnerable/app/toss_webhook.py:9 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+c1f8d85b03f63a5a
+# KR-PAY-002 testdata/rules/KR-PAY-002/vulnerable/app/api/webhook/route.ts:3 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+bbe8fe35f4710f61
+# KR-PAY-002 testdata/rules/KR-PAY-002/vulnerable/app/webhook.py:6 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+1ddbc95f8edd75ed
+# RE-003 testdata/rules/RE-003/vulnerable/src/Comment.tsx:2 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+2fcbf669c278bdbd
+# RE-003 testdata/rules/RE-003/vulnerable/src/Legacy.jsx:1 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+dfe21553e340cdec
+# SB-002 testdata/rules/SB-002/vulnerable/.env.example:1 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+881392b9c80ce167
+# SB-002 testdata/rules/SB-002/vulnerable/.env.local:2 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+91de8f9c47145f9b
+# SB-002 testdata/rules/SB-002/vulnerable/web/.env.production:1 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+0dbabb59f35f3a2f
+# SB-003 testdata/rules/SB-003/vulnerable/app/admin.tsx:8 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+423344a0f9cf69dd
+# SB-003 testdata/rules/SB-003/vulnerable/lib/admin.js:2 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+e136a63c536d7a2e
+# KR-AUTH-001 testdata/rules/php/KR-AUTH-001/vulnerable/login.php:2 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+4a927c5ae9a46cba
+# KR-AUTH-001 testdata/rules/php/KR-AUTH-001/vulnerable/session_state.php:3 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+b457cd36b59d114f
+# KR-AUTH-002 testdata/rules/php/KR-AUTH-002/vulnerable/login.php:3 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+dc80dab51a6f2750
+# KR-AUTH-002 testdata/rules/php/KR-AUTH-002/vulnerable/session_state.php:3 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+b0662b76f9dfeb45
+# KR-PAY-001 testdata/rules/php/KR-PAY-001/vulnerable/vbank.php:2 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+8ac8e14284d9b522
+# KR-PAY-001 testdata/rules/php/KR-PAY-001/vulnerable/webhook.php:3 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+86a4868cd0255267
+# WEB-001 testdata/rules/php/KR-PAY-002/safe/checkout.php:2 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+dc93b3255bf8f276
+# KR-PAY-002 testdata/rules/php/KR-PAY-002/vulnerable/session_equals.php:2 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+941518c4a4c641f7
+# KR-PAY-002 testdata/rules/php/KR-PAY-002/vulnerable/session_hmac.php:2 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+58b64a33f269e231
+# KR-PAY-002 testdata/rules/php/KR-PAY-002/vulnerable/webhook.php:2 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+15ee8dfc70ae11d2
+# WEB-001 testdata/rules/web/WEB-001/vulnerable/index.html:4 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+dd45957bdfaa08db
+# WEB-001 testdata/rules/web/WEB-001/vulnerable/legacy.htm:3 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+2a8e4bf2105c4b40
+# WEB-001 testdata/rules/web/WEB-001/vulnerable/views/layout.ejs:2 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
+deb7847ef451dd7f
+# AR-002 testdata/untrusted/fake-assignment/.devcontainer/devcontainer.json:0 - 받은 코드 점검(--untrusted) 시험용으로 일부러 넣은 설정 표본
+849598be7d125c7f
+# AR-003 testdata/untrusted/fake-assignment/.devcontainer/devcontainer.json:0 - 받은 코드 점검(--untrusted) 시험용으로 일부러 넣은 설정 표본
+825ef114ab5cc839
+# AR-004 testdata/untrusted/fake-assignment/.mcp.json:0 - 받은 코드 점검(--untrusted) 시험용으로 일부러 넣은 설정 표본
+eddb751f5330e917
+# AR-001 testdata/untrusted/fake-assignment/.vscode/tasks.json:0 - 받은 코드 점검(--untrusted) 시험용으로 일부러 넣은 설정 표본
+897a28da5f4dbdd9
+# AR-005 testdata/untrusted/fake-assignment/package.json:0 - 받은 코드 점검(--untrusted) 시험용으로 일부러 넣은 설정 표본
+46754ec6f6d8014a
+# AR-006 .adkignore:0 - 이 무시 목록 파일 자체에 대한 알림(결과를 숨길 수 있는 설정 파일). 이 저장소가 일부러 둔 파일이라 설명이 끝남
+faa8e814fe7777ea

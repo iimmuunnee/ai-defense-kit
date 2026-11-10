@@ -1,0 +1,12 @@
+# pinned and unpinned mix
+Django==4.2.1
+requests[security]==2.31.0 ; python_version>"3"
+numpy>=1.2
+foo == 2.8.*
+Bar_Baz===1.0
+pkg==1.0 --hash=sha256:abc
+pytest
+-r dev.txt
+-e .
+https://x/y.whl
+name @ https://x

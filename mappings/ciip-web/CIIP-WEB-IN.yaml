@@ -1,0 +1,11 @@
+id: CIIP-WEB-IN
+name: "주통기 웹 IN 불충분한 권한 검증"
+clause: "Chapter 10 Web Application(웹) 11. IN (중요도 상, 733쪽)"
+source_url: https://www.kisa.or.kr/2060204/form?postSeq=22
+source_version: "KISA 2026 주요정보통신기반시설 기술적 취약점 분석·평가 방법 상세가이드 (2025-12-24 게시)"
+summary_ko: "다른 사용자의 권한을 빼앗아 민감한 데이터에 접근하거나 수정할 수 있는지 점검하고, 접근 제어가 필요한 모든 페이지에 서버 쪽 권한 검증 로직을 구현하게 한다."
+review:
+  status: checked
+  checked_by: "Claude (AI)"
+  checked_at: 2026-11-04
+  quote: "타 사용자의 권한을 탈취하여 민감한 데이터 접근 및 수정 가능 여부 점검"

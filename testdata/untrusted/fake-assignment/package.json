@@ -1,0 +1,8 @@
+{
+  "name": "fake-assignment",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "echo adk-test"
+  }
+}

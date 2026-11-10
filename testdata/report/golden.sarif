@@ -1,0 +1,240 @@
+{
+  "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/schemas/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "adk",
+          "version": "v0.1.0",
+          "informationUri": "https://github.com/iimmuunnee/ai-defense-kit",
+          "rules": [
+            {
+              "id": "SECRET-generic-api-key",
+              "shortDescription": {
+                "text": "코드에 키가 들어 있습니다"
+              },
+              "fullDescription": {
+                "text": "코드에 키가 들어 있습니다"
+              },
+              "help": {
+                "text": "키가 저장소에 있으면 누구나 쓸 수 있습니다.\n\n이 리포트는 법률 자문이 아닙니다. 국내 기준 연결은 참고용이며, 최종 판단은 전문가와 확인하세요.",
+                "markdown": "키가 저장소에 있으면 누구나 쓸 수 있습니다.\n\n이 리포트는 법률 자문이 아닙니다. 국내 기준 연결은 참고용이며, 최종 판단은 전문가와 확인하세요."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "security"
+                ],
+                "precision": "medium",
+                "security-severity": "8.0"
+              }
+            },
+            {
+              "id": "KR-PAY-002",
+              "shortDescription": {
+                "text": "포트원 웹훅 검증 누락"
+              },
+              "fullDescription": {
+                "text": "포트원 웹훅 검증 누락"
+              },
+              "help": {
+                "text": "서명을 확인하지 않으면 가짜 결제 알림을 받을 수 있습니다.\n\n이 리포트는 법률 자문이 아닙니다. 국내 기준 연결은 참고용이며, 최종 판단은 전문가와 확인하세요.",
+                "markdown": "서명을 확인하지 않으면 가짜 결제 알림을 받을 수 있습니다.\n\n이 리포트는 법률 자문이 아닙니다. 국내 기준 연결은 참고용이며, 최종 판단은 전문가와 확인하세요."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "tags": [
+                  "security"
+                ],
+                "precision": "medium",
+                "security-severity": "8.0"
+              }
+            },
+            {
+              "id": "DEP-CVE-2021-44228",
+              "shortDescription": {
+                "text": "취약한 라이브러리: lodash 4.17.15"
+              },
+              "fullDescription": {
+                "text": "취약한 라이브러리: lodash 4.17.15"
+              },
+              "help": {
+                "text": "알려진 취약점이 있는 버전입니다.\n\n이 리포트는 법률 자문이 아닙니다. 국내 기준 연결은 참고용이며, 최종 판단은 전문가와 확인하세요.",
+                "markdown": "알려진 취약점이 있는 버전입니다.\n\n이 리포트는 법률 자문이 아닙니다. 국내 기준 연결은 참고용이며, 최종 판단은 전문가와 확인하세요."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "tags": [
+                  "security"
+                ],
+                "precision": "high",
+                "security-severity": "5.5"
+              }
+            },
+            {
+              "id": "INFO-1",
+              "shortDescription": {
+                "text": "참고 사항"
+              },
+              "fullDescription": {
+                "text": "참고 사항"
+              },
+              "help": {
+                "text": "이 리포트는 법률 자문이 아닙니다. 국내 기준 연결은 참고용이며, 최종 판단은 전문가와 확인하세요.",
+                "markdown": "이 리포트는 법률 자문이 아닙니다. 국내 기준 연결은 참고용이며, 최종 판단은 전문가와 확인하세요."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "tags": [
+                  "security"
+                ],
+                "precision": "medium"
+              }
+            }
+          ]
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": false,
+          "endTimeUtc": "2026-11-04T09:30:00Z",
+          "toolExecutionNotifications": [
+            {
+              "level": "warning",
+              "message": {
+                "text": "secrets: git 기록이 없어 과거 커밋은 확인하지 못함"
+              }
+            },
+            {
+              "level": "error",
+              "message": {
+                "text": "deps (실패): OSV 조회 실패: network unreachable"
+              }
+            }
+          ]
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "SECRET-generic-api-key",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "코드에 키가 들어 있습니다\n근거: api_key = \"K7Q2****\"\n수정 방법: 키를 폐기하고 환경 변수로 옮기세요."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config.py",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "adkFingerprint/v1": "3333cccc4444dddd",
+            "primaryLocationLineHash": "3333cccc4444dddd:1"
+          },
+          "properties": {
+            "confidence": "certain",
+            "severity": "high"
+          }
+        },
+        {
+          "ruleId": "KR-PAY-002",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": {
+            "text": "포트원 웹훅 검증 누락\n수정 방법: Webhook.verify를 호출하세요.\n국내 기준: ISMSP-2.10.4 (검수 전)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/webhook.py",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 8
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "adkFingerprint/v1": "5555eeee6666ffff",
+            "primaryLocationLineHash": "5555eeee6666ffff:1"
+          },
+          "properties": {
+            "confidence": "suspect",
+            "severity": "high"
+          }
+        },
+        {
+          "ruleId": "DEP-CVE-2021-44228",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "취약한 라이브러리: lodash 4.17.15\n수정 방법: 4.17.21 이상으로 올리세요."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package-lock.json",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "adkFingerprint/v1": "1111aaaa2222bbbb",
+            "primaryLocationLineHash": "1111aaaa2222bbbb:1"
+          },
+          "properties": {
+            "confidence": "certain",
+            "severity": "medium"
+          }
+        },
+        {
+          "ruleId": "INFO-1",
+          "ruleIndex": 3,
+          "level": "note",
+          "message": {
+            "text": "참고 사항"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "README.md",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "confidence": "suspect",
+            "severity": "info"
+          }
+        }
+      ],
+      "properties": {
+        "gitCommit": "0123456789abcdef0123456789abcdef01234567",
+        "gitDirty": "unknown"
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+# 내장 결과 종류 -> 국내 기준 항목 ID. 근거: docs/research/2026-11-04-standards-facts.md
+secret-current: [ISMSP-2.7.2]
+secret-history: [ISMSP-2.7.2]
+vuln-lib: [PIPC-SAFE-9-2, ISMSP-2.10.8, ISMSP-2.11.2]
+kev-lib: [PIPC-SAFE-9-2, ISMSP-2.10.8, ISMSP-2.11.2]
+SB-001: [PIPC-SAFE-6-3, ISMSP-2.6.4, ISMSP-2.10.2, CIIP-WEB-IN]
+AS-001: [ISMSP-1.2.1]
+AS-002: [ISMSP-1.2.1]

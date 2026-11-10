@@ -1,0 +1,26 @@
+# 확인함 (2026-11-05):
+#   Vite: `VITE_` 변수는 번들 후 클라이언트 코드에 노출되고 API 키 같은 민감 정보를 넣으면 안 된다.
+#   Create React App: 환경 변수는 빌드에 들어가 누구나 볼 수 있고, 비밀을 넣지 말라고 경고한다.
+# 참고: 이름이 비밀 값을 뜻하는 말로 끝날 때만 걸린다. `VITE_PASSWORD_MIN_LENGTH`,
+#   `REACT_APP_PASSWORD_RESET_URL`, `VITE_SECRET_SANTA_ENABLED`는 걸리지 않는다.
+# 참고: 줄마다 결과를 낸다. 한 줄을 무시해도 같은 파일의 다른 값은 계속 나온다.
+# 참고: 테스트 코드와 `.env.example`의 이름도 걸린다. 예시 값을 진짜 값으로 옮기기 쉽기 때문이다.
+# 참고: 이름만 본다. 값이 실제 키인지는 보지 않는다. Vite `envPrefix`로 접두사를 바꾼 프로젝트는 찾지 못한다.
+id: RE-001
+title: 브라우저로 나가는 환경 변수에 비밀 값
+stacks: [react]
+severity: critical
+match:
+  scope: line
+  files: ["**/.env*", "**/*.{js,jsx,ts,tsx,mjs,cjs}", "**/vite.config.*"]
+  has_any_regex:
+    - '\b(?:VITE|REACT_APP)_[A-Z0-9_]*(?:SECRET(?:_ACCESS)?(?:_KEY)?|SERVICE_ROLE(?:_KEY)?|PASSWORD|PASSWD|PRIVATE_KEY)\b'
+explain: explain/RE-001.md
+fix: fixes/RE-001/
+mappings: [ISMSP-2.7.2]
+confidence: high
+references:
+  - url: https://vite.dev/guide/env-and-mode
+    checked_at: 2026-11-05
+  - url: https://create-react-app.dev/docs/adding-custom-environment-variables/
+    checked_at: 2026-11-05

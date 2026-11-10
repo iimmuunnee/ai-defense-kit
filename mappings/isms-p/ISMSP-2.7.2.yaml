@@ -1,0 +1,11 @@
+id: ISMSP-2.7.2
+name: "ISMS-P 2.7.2 암호키 관리"
+clause: "2.7.2"
+source_url: https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000244750
+source_version: "개인정보보호위원회고시 제2024-8호 (2024. 7. 24. 일부개정) 별표 7"
+summary_ko: "암호키를 안전하게 생성·이용·보관·배포·파기하는 관리 절차를 세워 이행하고, 필요하면 복구방안을 마련해야 한다."
+review:
+  status: checked
+  checked_by: "Claude (AI)"
+  checked_at: 2026-11-04
+  quote: "암호키의 안전한 생성ㆍ이용ㆍ보관ㆍ배포ㆍ파기를 위한 관리 절차를 수립ㆍ이행하고, 필요 시 복구방안을 마련하여야 한다."

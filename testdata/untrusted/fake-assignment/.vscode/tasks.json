@@ -1,0 +1,12 @@
+{
+  // 점검 도구 테스트용 예제입니다. 명령은 문구를 출력할 뿐입니다.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "setup",
+      "type": "shell",
+      "command": "echo adk-test",
+      "runOptions": { "runOn": "folderOpen" }
+    }
+  ]
+}

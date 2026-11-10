@@ -1,0 +1,23 @@
+# 지갑 코드 규칙은 줄 모양만 본다. 요청 본문이나 외부 응답이 같은 줄에서 바로 서명·전송 함수에 들어가는 모양만 찾는다.
+# 참고: ethers의 `signTypedData(domain, types, 값)`처럼 세 번째 인자가 입력인 줄도 찾는다(두 번째 패턴).
+# 한계: 값을 변수에 담아 다른 줄에서 넘기면 찾지 못한다. 앞에서 검증했는지는 알 수 없다.
+# 한계: `{ to: a, value: req.body.v }`처럼 입력이 중괄호 안 어디에 있어도 찾지만, 괄호가 들어간 값 뒤에 있으면 놓친다.
+# 한계: 서명 화면에 보이는 내용과 실제 서명 내용이 다른 경우, 위조된 승인 요청처럼 줄에 드러나지 않는 조작은 볼 수 없다.
+# 참고: `parse(req.body)`처럼 검증 함수를 한 번 거치면 입력이 인자의 첫머리가 아니므로 찾지 않는다. 그 함수가
+#   실제로 검증하는지는 보지 않는다.
+id: WL-002
+title: 요청 본문이나 외부 응답을 검증 없이 서명·전송 함수에 넘김
+stacks: [web3]
+severity: high
+match:
+  scope: line
+  files: ["**/*.{js,jsx,ts,tsx,mjs,cjs}"]
+  regex_requires: ["signTransaction", "signMessage", "signTypedData", "sendTransaction", "writeContract"]
+  has_any_regex:
+    - '\b(?:signTransaction|signMessage|signTypedData|sendTransaction|writeContract)\s*\(\s*(?:\{[^{}()]*?)?(?:(?:req|request|ctx\.request|ctx|event|c\.req)\.(?:body|query|params)\b|(?:res|response|resp|apiRes)\.(?:data|body)\b|\(?\s*await\s+(?:(?:res|response|resp|req|request|c\.req|ctx\.request)\.(?:json|text)\(\)|(?:fetch|axios(?:\.\w+)?|got|ky)\())'
+    - '\bsignTypedData\s*\([^()]*,[^()]*,\s*(?:(?:req|request|ctx\.request|ctx|event|c\.req)\.(?:body|query|params)\b|(?:res|response|resp|apiRes)\.(?:data|body)\b|\(?\s*await\s+(?:(?:res|response|resp|req|request|c\.req|ctx\.request)\.(?:json|text)\(\)|(?:fetch|axios(?:\.\w+)?|got|ky)\())'
+  skip_line_regex:
+    - '^\s*(?://|/\*|\*)'
+explain: explain/WL-002.md
+fix: fixes/WL-002/
+confidence: medium

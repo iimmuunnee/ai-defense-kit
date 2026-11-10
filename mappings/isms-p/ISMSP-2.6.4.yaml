@@ -1,0 +1,11 @@
+id: ISMSP-2.6.4
+name: "ISMS-P 2.6.4 데이터베이스 접근"
+clause: "2.6.4"
+source_url: https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000244750
+source_version: "개인정보보호위원회고시 제2024-8호 (2024. 7. 24. 일부개정) 별표 7"
+summary_ko: "데이터베이스에 저장된 정보를 식별하고, 정보의 중요도와 응용프로그램·사용자 유형에 따른 접근통제 정책을 세워 이행해야 한다."
+review:
+  status: checked
+  checked_by: "Claude (AI)"
+  checked_at: 2026-11-04
+  quote: "테이블 목록 등 데이터베이스 내에서 저장ㆍ관리되고 있는 정보를 식별하고, 정보의 중요도와 응용프로그램 및 사용자 유형 등에 따른 접근통제 정책을 수립ㆍ이행하여야 한다."

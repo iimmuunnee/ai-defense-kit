@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# 외부 코드에 넘기는 권한을 최소로 둔다.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false # 한 OS가 실패해도 나머지 OS 결과를 끝까지 본다
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      # 태그는 옮겨질 수 있어 커밋 번호로 고정한다.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - name: gofmt
+        shell: bash
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "gofmt를 적용하지 않은 파일:"
+            echo "$unformatted"
+            exit 1
+          fi
+      - run: go vet ./...
+      - run: go test -count=1 ./...
+      - run: go test -race -count=1 -run TestMaskTextAndCheckerRunConcurrently ./internal/checker/secrets/
+      # 취약점 검사는 네트워크가 필요하고 결과가 OS와 무관하므로 ubuntu에서만 돈다.
+      - name: govulncheck
+        if: matrix.os == 'ubuntu-latest'
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...

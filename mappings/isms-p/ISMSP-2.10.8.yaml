@@ -1,0 +1,11 @@
+id: ISMSP-2.10.8
+name: "ISMS-P 2.10.8 패치관리"
+clause: "2.10.8"
+source_url: https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000244750
+source_version: "개인정보보호위원회고시 제2024-8호 (2024. 7. 24. 일부개정) 별표 7"
+summary_ko: "소프트웨어, 운영체제, 보안시스템 등의 취약점으로 인한 침해사고를 막기 위해 최신 패치를 적용하고, 적용이 어려우면 별도 보완대책을 이행해야 한다."
+review:
+  status: checked
+  checked_by: "Claude (AI)"
+  checked_at: 2026-11-04
+  quote: "소프트웨어, 운영체제, 보안시스템 등의 취약점으로 인한 침해사고를 예방하기 위하여 최신 패치를 적용하여야 한다."

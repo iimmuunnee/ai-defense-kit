@@ -1,0 +1,11 @@
+id: ISMSP-2.5.5
+name: "ISMS-P 2.5.5 특수 계정 및 권한 관리"
+clause: "2.5.5"
+source_url: https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000244750
+source_version: "개인정보보호위원회고시 제2024-8호 (2024. 7. 24. 일부개정) 별표 7"
+summary_ko: "정보시스템 관리, 개인정보·중요정보 관리 같은 특수 목적의 계정과 권한은 최소한으로 부여하고 따로 식별해 통제해야 한다."
+review:
+  status: checked
+  checked_by: "Claude (AI)"
+  checked_at: 2026-11-04
+  quote: "정보시스템 관리, 개인정보 및 중요정보 관리 등 특수 목적을 위하여 사용하는 계정 및 권한은 최소한으로 부여하고 별도로 식별하여 통제하여야 한다."

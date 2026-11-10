@@ -1,0 +1,38 @@
+# 확인함: FastAPI 공식 문서 (fastapi/fastapi 저장소 master, 2026-11-04)
+#   docs/en/docs/tutorial/metadata.md 105행: `openapi_url=None`으로 OpenAPI 스키마를 끄면 그것을 쓰는 문서 화면도 함께 꺼진다.
+#   같은 파일 112-116행: `docs_url=None`, `redoc_url=None`으로 각 화면을 끌 수 있다.
+#   docs/en/docs/how-to/conditional-openapi.md: 끄면 `/openapi.json`, `/docs`, `/redoc`는 404가 되고, 기본 `openapi_url`은 "/openapi.json"이다.
+#     같은 문서: "Hiding your documentation user interfaces in production *shouldn't* be the way to protect your API."
+#     "It could be considered simply a form of Security through obscurity." 환경 변수로 조건부로 끄는 방법은 선택 사항으로 안내한다.
+# 판단: 공식 문서는 문서 화면을 끄라고 권장하지 않는다. 그래서 이 결과는 취약점이 아니라 참고용(낮음)이다.
+# 참고: `\bFastAPI\(` 호출이 있는 줄만 본다. 같은 줄에서 `#` 앞에 있는 경우만 맞으므로 `# app = FastAPI()` 같은 주석 줄은 안 맞는다.
+#   `from fastapi import FastAPI`, `class App(FastAPI):`(하위 클래스), `APIRouter(`는 맞지 않는다.
+#   `fastapi.FastAPI(...)`처럼 모듈 이름을 붙인 호출은 맞는다.
+# 참고: 파일 안 어디서든 `docs_url=None`, `openapi_url=None`, `openapi_url=<식별자>`(예: `settings.openapi_url`)가 있으면 끈 것으로 본다.
+#   `openapi_url="/api/openapi.json"`처럼 경로 문자열만 바꾼 경우는 문서가 그대로 열려 있으므로 맞는다.
+# 확인 필요: 한 파일에 FastAPI 앱이 둘 있고 한쪽만 문서를 끄면, 파일 전체를 보므로 놓친다(알려진 놓침). 앱이 여러 개여도 결과는 파일당 하나다.
+# 확인 필요: 하위 클래스(`class App(FastAPI)`)로 만든 앱, 다른 파일에서 만든 앱, 변수에 담은 설정은 보지 않는다.
+# 확인 필요: 문자열이나 docstring 안에 적힌 `FastAPI(`도 글자만 보므로 맞을 수 있다(오탐).
+# 확인 필요: 설치된 FastAPI 버전별 기본값은 확인하지 않았다(master 문서 기준).
+id: FA-002
+title: FastAPI 문서 화면(/docs, /redoc, /openapi.json)이 열려 있음 (참고)
+stacks: [fastapi]
+severity: low
+match:
+  scope: file
+  files: ["**/*.py"]
+  has_any_regex:
+    - '(?m)^[^#\n]*\bFastAPI\('
+  missing_all_regex:
+    - 'docs_url\s*=\s*None'
+    - 'openapi_url\s*=\s*None'
+    - 'openapi_url\s*=\s*[A-Za-z_]'
+explain: explain/FA-002.md
+fix: fixes/FA-002/
+mappings: [CIIP-WEB-IL]
+confidence: medium
+references:
+  - url: https://github.com/fastapi/fastapi/blob/master/docs/en/docs/tutorial/metadata.md
+    checked_at: 2026-11-04
+  - url: https://github.com/fastapi/fastapi/blob/master/docs/en/docs/how-to/conditional-openapi.md
+    checked_at: 2026-11-04

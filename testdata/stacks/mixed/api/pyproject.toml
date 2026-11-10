@@ -1,0 +1,4 @@
+[project]
+dependencies = [
+  "FastAPI>=0.110",
+]

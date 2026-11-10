@@ -1,0 +1,11 @@
+id: ISMSP-2.11.2
+name: "ISMS-P 2.11.2 취약점 점검 및 조치"
+clause: "2.11.2"
+source_url: https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000244750
+source_version: "개인정보보호위원회고시 제2024-8호 (2024. 7. 24. 일부개정) 별표 7"
+summary_ko: "정기적으로 취약점을 점검해 발견된 취약점은 신속하게 조치하고, 최신 보안취약점의 발생 여부를 계속 파악해 영향을 분석하고 조치해야 한다."
+review:
+  status: checked
+  checked_by: "Claude (AI)"
+  checked_at: 2026-11-04
+  quote: "정보시스템의 취약점이 노출되어 있는지를 확인하기 위하여 정기적으로 취약점 점검을 수행하고 발견된 취약점에 대해서는 신속하게 조치하여야 한다."

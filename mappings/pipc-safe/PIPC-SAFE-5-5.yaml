@@ -1,0 +1,11 @@
+id: PIPC-SAFE-5-5
+name: "개인정보의 안전성 확보조치 기준 제5조(접근 권한의 관리)"
+clause: "제5조 제5항"
+source_url: https://www.law.go.kr/LSW/admRulLsInfoP.do?admRulSeq=2100000281400
+source_version: "개인정보보호위원회고시 제2026-9호 (2026. 7. 1. 일부개정, 시행 2026. 7. 1.)"
+summary_ko: "개인정보처리자는 개인정보취급자나 정보주체가 쓰는 인증수단을 안전하게 적용하고 관리해야 한다."
+review:
+  status: checked
+  checked_by: "Claude (AI)"
+  checked_at: 2026-11-04
+  quote: "개인정보처리자는 개인정보취급자 또는 정보주체의 인증수단을 안전하게 적용하고 관리하여야 한다."
