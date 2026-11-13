@@ -3,7 +3,7 @@
 # adk — AI Defense Kit
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-![Go 1.27.3+](https://img.shields.io/badge/Go-1.27.3%2B-00ADD8.svg)
+![Go 1.27.4+](https://img.shields.io/badge/Go-1.27.4%2B-00ADD8.svg)
 ![상태: 초기 개발](https://img.shields.io/badge/%EC%83%81%ED%83%9C-%EC%B4%88%EA%B8%B0%20%EA%B0%9C%EB%B0%9C-orange.svg)
 
 </div>
@@ -30,7 +30,7 @@
 
 **릴리스 파일.** GitHub 릴리스에서 운영체제별 실행 파일과 `SHA256SUMS`를 받고, 체크섬과 빌드 출처 증명(`gh attestation verify`)을 확인한 뒤 씁니다. 명령은 [설치와 검증](docs/usage.md#설치와-검증)에 있습니다. 릴리스 워크플로는 있지만 아직 첫 릴리스 전이라, 이 과정을 실제 릴리스 파일로 돌려 보지는 못했습니다(확인 필요).
 
-**소스에서 설치.** [Go 1.27.3 이상](https://go.dev/dl/)이 필요합니다. 받을 코드가 바뀌지 않게 태그나 커밋 해시로 고정하세요.
+**소스에서 설치.** [Go 1.27.4 이상](https://go.dev/dl/)이 필요합니다. 받을 코드가 바뀌지 않게 태그나 커밋 해시로 고정하세요.
 
 ```bash
 go install github.com/iimmuunnee/ai-defense-kit/cmd/adk@<태그 또는 커밋 해시>
