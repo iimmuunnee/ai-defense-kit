@@ -98,7 +98,7 @@ adk scan . --fail-on none
 
 ## 설치와 검증
 
-릴리스 파일은 GitHub 릴리스 페이지에서 받습니다. 운영체제·CPU별 파일(`adk_linux_amd64`, `adk_darwin_arm64`, `adk_windows_amd64.exe` 등)과 `SHA256SUMS`가 함께 올라갑니다. 릴리스는 `v*` 태그를 푸시할 때 GitHub Actions가 만들며, 첫 릴리스 전에는 이 절의 명령을 실제 파일로 돌려 보지 못했습니다(확인 필요).
+릴리스 파일은 GitHub 릴리스 페이지에서 받습니다. 운영체제·CPU별 파일(`adk_linux_amd64`, `adk_darwin_arm64`, `adk_windows_amd64.exe` 등)과 `SHA256SUMS`가 함께 올라갑니다. 릴리스는 `v*` 태그를 푸시할 때 GitHub Actions가 만들며, `v0.1.0`의 Windows amd64 파일로 체크섬과 빌드 출처 증명을 확인했습니다. macOS와 Linux 명령은 실제 릴리스 파일로 돌려 보지 않았습니다(확인 필요).
 
 ```
 # 1) 체크섬 확인 (받은 폴더에서)
