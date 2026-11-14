@@ -34,7 +34,10 @@ const (
 	maxFileSize        = 1 << 20 // 1MB
 	warnNoGit          = "git 기록이 없어 과거 커밋은 확인하지 못했습니다."
 	warnHistoryPartial = "git 기록을 읽지 못해 과거 커밋 일부는 확인하지 못했습니다 (git 오류 또는 빠진 객체)."
-	gitLogOpts         = "--full-history --all --diff-filter=tuxdb --no-textconv --no-ext-diff --no-show-signature --relative"
+	// warnHistoryUnfinished goes with the current-file results saved before the
+	// history scan starts: it is shown only if the timeout stops that scan.
+	warnHistoryUnfinished = "시간 제한 안에 git 기록(과거 커밋)을 다 보지 못했습니다. 현재 파일 결과만 담았고, 과거 커밋에만 남은 비밀 키는 빠졌을 수 있습니다."
+	gitLogOpts            = "--full-history --all --diff-filter=tuxdb --no-textconv --no-ext-diff --no-show-signature --relative"
 )
 
 type secretsChecker struct{ data fs.FS }
@@ -58,16 +61,24 @@ func (c secretsChecker) Run(ctx context.Context, t checker.Target) (checker.Resu
 		return checker.Result{}, err
 	}
 
-	current, err := scanFiles(ctx, root, t.Untrusted)
+	current, err := fileScanner(ctx, root, t.Untrusted)
 	if err != nil {
 		return checker.Result{}, fmt.Errorf("현재 파일 점검 실패: %w", err)
 	}
+	current = dropPublicSupabaseKeys(current)
+	explainCur, explainHist := c.explain("secret-current.md"), c.explain("secret-history.md")
 
 	var res checker.Result
 	var history []report.Finding
 	if hasGit(root) {
+		// The history scan is the slow stage. If the timeout stops it, the
+		// current-file results still reach the report, with a warning.
+		checker.SavePartial(ctx, checker.Result{
+			Findings: merge(root, current, nil, explainCur, explainHist),
+			Warnings: []string{warnHistoryUnfinished},
+		})
 		var partial bool
-		history, partial, err = scanHistory(ctx, root, t.Untrusted)
+		history, partial, err = historyScanner(ctx, root, t.Untrusted)
 		if err == nil && partial {
 			res.Warnings = append(res.Warnings, warnHistoryPartial)
 		}
@@ -82,12 +93,17 @@ func (c secretsChecker) Run(ctx context.Context, t checker.Target) (checker.Resu
 		res.Warnings = append(res.Warnings, warnNoGit)
 	}
 
-	current = dropPublicSupabaseKeys(current)
 	history = dropPublicSupabaseKeys(history)
 
-	res.Findings = merge(root, current, history, c.explain("secret-current.md"), c.explain("secret-history.md"))
+	res.Findings = merge(root, current, history, explainCur, explainHist)
 	return res, nil
 }
+
+// fileScanner and historyScanner are the two stages of Run. Tests replace them.
+var (
+	fileScanner    = scanFiles
+	historyScanner = scanHistory
+)
 
 // merge turns gitleaks' current-file and history findings into adk findings.
 // A secret already found in a current file is not repeated from history, and a

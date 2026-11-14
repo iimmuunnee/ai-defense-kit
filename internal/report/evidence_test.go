@@ -183,3 +183,10 @@ func TestEvidenceUsesTargetName(t *testing.T) {
 		t.Errorf("target not name only:\n%s", out)
 	}
 }
+
+func TestEvidenceShowsPartialCheck(t *testing.T) {
+	r := Report{Target: "x", Checks: []checker.CheckStatus{{Name: "secrets", Status: checker.StatusPartial}}}
+	if !strings.Contains(evidenceString(t, r, nil), `"partial"`) {
+		t.Error("partial missing")
+	}
+}

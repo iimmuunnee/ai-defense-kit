@@ -399,9 +399,10 @@ func WriteSARIF(w io.Writer, r Report) error {
 	}
 	for _, c := range r.Checks {
 		switch c.Status {
-		case checker.StatusFailed:
+		case checker.StatusFailed, checker.StatusPartial:
+			// A partial check's missing results would look fixed once uploaded.
 			inv.ExecutionSuccessful = false
-			notify("error", fmt.Sprintf("%s (실패): %s", c.Name, c.Error))
+			notify("error", fmt.Sprintf("%s (%s): %s", c.Name, statusKo(c.Status), c.Error))
 		case checker.StatusSkipped:
 			notify("warning", fmt.Sprintf("%s (건너뜀): %s", c.Name, c.Error))
 		}

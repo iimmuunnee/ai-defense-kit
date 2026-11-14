@@ -23,15 +23,15 @@ func ParseFailOn(v string) (*finding.Severity, error) {
 
 // ExitCode maps results to a process exit code, one table for every command:
 // 1 = something at or above failOn (nil means --fail-on none; Info never
-// counts), else 2 = a checker failed under strict, else 0. A finding beats a
-// failed check, as in watch and device.
+// counts), else 2 = a checker failed or was only partly done under strict,
+// else 0. A finding beats a failed check, as in watch and device.
 func ExitCode(fs []finding.Finding, st []checker.CheckStatus, failOn *finding.Severity, strict bool) int {
 	if finding.AtOrAbove(fs, failOn) {
 		return 1
 	}
 	if strict {
 		for _, s := range st {
-			if s.Status == checker.StatusFailed {
+			if s.Status == checker.StatusFailed || s.Status == checker.StatusPartial {
 				return 2
 			}
 		}

@@ -13,12 +13,18 @@ import (
 type outcome struct {
 	res Result
 	err error
+	// partial says res is what the checker saved with SavePartial before its
+	// timeout stopped it.
+	partial bool
+	elapsed time.Duration
 }
 
 // RunAll runs every checker in its own goroutine with its own timeout
 // (timeout <= 0 means no per-checker timeout). Panics are recovered and
 // recorded as failed. On any error the checker's findings are discarded and
-// its warnings and External records kept; on success both are kept. Statuses follow the order of cs.
+// its warnings and External records kept; on success both are kept. A checker
+// stopped by its timeout after SavePartial is recorded as partial with the
+// saved findings and warnings. Statuses follow the order of cs.
 func RunAll(ctx context.Context, cs []Checker, t Target, timeout time.Duration) ([]finding.Finding, []CheckStatus) {
 	outs := make([]outcome, len(cs))
 	done := make([]chan struct{}, len(cs))
@@ -42,9 +48,14 @@ func RunAll(ctx context.Context, cs []Checker, t Target, timeout time.Duration) 
 	for i, c := range cs {
 		<-done[i]
 		o := outs[i]
-		st := CheckStatus{Name: c.Name(), Status: StatusOK, Warnings: o.res.Warnings, External: o.res.External}
+		ms := o.elapsed.Milliseconds()
+		st := CheckStatus{Name: c.Name(), Status: StatusOK, Warnings: o.res.Warnings, External: o.res.External, DurationMS: &ms}
 		switch {
-		case o.err == nil:
+		case o.err == nil || o.partial:
+			if o.partial {
+				st.Status = StatusPartial
+				st.Error = o.err.Error()
+			}
 			for _, f := range o.res.Findings {
 				f.Evidence, f.Title = finding.ScrubNarrow(f.Evidence), finding.ScrubNarrow(f.Title)
 				all = append(all, f)
@@ -62,14 +73,19 @@ func RunAll(ctx context.Context, cs []Checker, t Target, timeout time.Duration) 
 }
 
 // runOne runs a single checker, bounded by the timeout even if the checker
-// ignores its context, and converts panics into errors.
-func runOne(parent context.Context, c Checker, t Target, timeout time.Duration) outcome {
+// ignores its context, and converts panics into errors. When the timeout (not
+// the user) stops a checker that saved a partial result, that result is used.
+func runOne(parent context.Context, c Checker, t Target, timeout time.Duration) (o outcome) {
+	start := time.Now()
+	defer func() { o.elapsed = time.Since(start) }()
 	ctx := parent
 	if timeout > 0 {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(parent, timeout)
 		defer cancel()
 	}
+	box := &partialBox{}
+	ctx = context.WithValue(ctx, partialKey{}, box)
 
 	ch := make(chan outcome, 1) // buffered: an abandoned checker can still send and exit
 	go func() {
@@ -82,7 +98,6 @@ func runOne(parent context.Context, c Checker, t Target, timeout time.Duration) 
 		ch <- outcome{res: res, err: err}
 	}()
 
-	var o outcome
 	select {
 	case o = <-ch:
 	case <-ctx.Done():
@@ -90,6 +105,11 @@ func runOne(parent context.Context, c Checker, t Target, timeout time.Duration) 
 	}
 	if o.err != nil && ctx.Err() != nil {
 		o.err = stopped(parent, ctx, timeout)
+		if parent.Err() == nil {
+			if res, ok := box.get(); ok {
+				o.res, o.partial = res, true
+			}
+		}
 	}
 	return o
 }

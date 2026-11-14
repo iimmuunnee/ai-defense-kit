@@ -592,3 +592,19 @@ func TestSARIFSupplyChainTag(t *testing.T) {
 		}
 	}
 }
+
+// 일부만 점검한 실행은 성공으로 보이지 않는다. 올리면 빠진 결과가 "고쳐짐"으로 보일 수 있다.
+func TestSARIFPartialCheckIsNotSuccessful(t *testing.T) {
+	r := Report{Target: "x", ToolVersion: "v0.1.0", Checks: []checker.CheckStatus{
+		{Name: "secrets", Status: checker.StatusPartial, Error: "시간 제한(5m0s)을 넘겨 중단됨"},
+	}}
+	run, _ := sarifOf(t, r)
+	inv := run["invocations"].([]any)[0].(obj)
+	if inv["executionSuccessful"] != false {
+		t.Errorf("executionSuccessful = %v, want false", inv["executionSuccessful"])
+	}
+	n := inv["toolExecutionNotifications"].([]any)[0].(obj)
+	if n["level"] != "error" || n["message"].(obj)["text"] != "secrets (일부만 점검): 시간 제한(5m0s)을 넘겨 중단됨" {
+		t.Errorf("notification = %v", n)
+	}
+}

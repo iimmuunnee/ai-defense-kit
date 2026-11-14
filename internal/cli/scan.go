@@ -32,11 +32,13 @@ import (
 	"github.com/iimmuunnee/ai-defense-kit/internal/stack"
 )
 
+// checkerTimeout bounds each scan checker. Tests shorten it.
+var checkerTimeout = 5 * time.Minute
+
 const (
-	checkerTimeout = 5 * time.Minute
-	kevTimeout     = 30 * time.Second
-	msgCancelled   = "사용자가 점검을 중단했습니다."
-	usageText      = `사용법:
+	kevTimeout   = 30 * time.Second
+	msgCancelled = "사용자가 점검을 중단했습니다."
+	usageText    = `사용법:
   adk version
   adk scan <폴더> [--format md,json,sarif] [--out <폴더>] [--fail-on critical|high|medium|low|none]
                   [--strict] [--offline] [--osv-db <경로>] [--rules-dir <경로>] [--untrusted]
@@ -415,6 +417,8 @@ func warnChecks(stderr io.Writer, checks []checker.CheckStatus) {
 			lines = append(lines, fmt.Sprintf("  - %s (실패): %s", c.Name, report.SafeText(c.Error)))
 		case checker.StatusSkipped:
 			lines = append(lines, fmt.Sprintf("  - %s (건너뜀): %s", c.Name, report.SafeText(c.Error)))
+		case checker.StatusPartial:
+			lines = append(lines, fmt.Sprintf("  - %s (일부만 점검): %s", c.Name, report.SafeText(c.Error)))
 		}
 		for _, w := range c.Warnings {
 			lines = append(lines, fmt.Sprintf("  - %s: %s", c.Name, report.SafeText(w)))
@@ -431,9 +435,10 @@ func warnChecks(stderr io.Writer, checks []checker.CheckStatus) {
 	}
 }
 
+// anyRan reports whether any check produced results, in full or in part.
 func anyRan(checks []checker.CheckStatus) bool {
 	for _, c := range checks {
-		if c.Status == checker.StatusOK {
+		if c.Status == checker.StatusOK || c.Status == checker.StatusPartial {
 			return true
 		}
 	}
