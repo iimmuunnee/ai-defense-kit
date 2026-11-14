@@ -85,9 +85,15 @@ func (c secretsChecker) Run(ctx context.Context, t checker.Target) (checker.Resu
 	current = dropPublicSupabaseKeys(current)
 	history = dropPublicSupabaseKeys(history)
 
-	explainCur := c.explain("secret-current.md")
-	explainHist := c.explain("secret-history.md")
+	res.Findings = merge(root, current, history, c.explain("secret-current.md"), c.explain("secret-history.md"))
+	return res, nil
+}
 
+// merge turns gitleaks' current-file and history findings into adk findings.
+// A secret already found in a current file is not repeated from history, and a
+// secret found in several history places is reported once.
+func merge(root string, current, history []report.Finding, explainCur, explainHist string) []finding.Finding {
+	var out []finding.Finding
 	seen := map[string]bool{}
 	curLoc := func(g report.Finding) string { return finding.NormalizePath(root, g.File) }
 	var curPos, histPos [][2]int
@@ -95,12 +101,12 @@ func (c secretsChecker) Run(ctx context.Context, t checker.Target) (checker.Resu
 		k := g.RuleID + "\x00" + g.Secret
 		loc := curLoc(g)
 		seen[k] = true
-		res.Findings = append(res.Findings, build(g, "secret-current", loc, finding.High, "코드에 비밀 키가 들어 있음", g.Secret, "", explainCur,
+		out = append(out, build(g, "secret-current", loc, finding.High, "코드에 비밀 키가 들어 있음", g.Secret, "", explainCur,
 			"코드에서 키를 지우고 환경 변수로 옮긴 뒤, 이미 공유된 적이 있다면 키를 폐기하고 새로 발급하세요."))
 		curPos = append(curPos, [2]int{g.StartLine, g.StartColumn})
 	}
-	nCur := len(res.Findings)
-	for _, g := range history {
+	nCur := len(out)
+	for _, g := range historyInOrder(history) {
 		k := g.RuleID + "\x00" + g.Secret
 		if seen[k] {
 			continue
@@ -110,14 +116,51 @@ func (c secretsChecker) Run(ctx context.Context, t checker.Target) (checker.Resu
 		if len(commit) > 7 {
 			commit = commit[:7]
 		}
-		res.Findings = append(res.Findings, build(g, "secret-history", filepath.ToSlash(g.File), finding.Medium, "git 기록에 비밀 키가 남아 있음", g.Secret,
+		out = append(out, build(g, "secret-history", filepath.ToSlash(g.File), finding.Medium, "git 기록에 비밀 키가 남아 있음", g.Secret,
 			" (커밋 "+commit+")", explainHist,
 			"파일을 지워도 기록에 남습니다. 해당 키를 폐기하고 새로 발급하세요."))
 		histPos = append(histPos, [2]int{g.StartLine, g.StartColumn})
 	}
-	numberRepeats(res.Findings[:nCur], curPos)
-	numberRepeats(res.Findings[nCur:], histPos)
-	return res, nil
+	numberRepeats(out[:nCur], curPos)
+	numberRepeats(out[nCur:], histPos)
+	return out
+}
+
+// historyInOrder returns history sorted so the place merge keeps for a secret
+// found in several commits or files is the same on every run. gitleaks checks
+// each file change of the log in its own goroutine and appends findings as they
+// finish, so its order changes from run to run; keeping "the first one" in that
+// order moved the reported file, commit and fingerprint between runs.
+//
+// The oldest commit comes first (gitleaks gives the author date as UTC RFC 3339,
+// so the strings compare as times), then path, line, column and commit hash. The
+// oldest commit is where the secret got in, and new commits that copy it later do
+// not move it, so the fingerprint stays put while the history grows. A missing
+// date sorts last.
+func historyInOrder(history []report.Finding) []report.Finding {
+	out := slices.Clone(history)
+	slices.SortStableFunc(out, func(a, b report.Finding) int {
+		if (a.Date == "") != (b.Date == "") {
+			if a.Date == "" {
+				return 1
+			}
+			return -1
+		}
+		if c := strings.Compare(a.Date, b.Date); c != 0 {
+			return c
+		}
+		if c := strings.Compare(filepath.ToSlash(a.File), filepath.ToSlash(b.File)); c != 0 {
+			return c
+		}
+		if c := a.StartLine - b.StartLine; c != 0 {
+			return c
+		}
+		if c := a.StartColumn - b.StartColumn; c != 0 {
+			return c
+		}
+		return strings.Compare(a.Commit, b.Commit)
+	})
+	return out
 }
 
 // numberRepeats gives the findings of one scan part their occurrence number:
