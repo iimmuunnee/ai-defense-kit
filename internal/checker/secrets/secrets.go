@@ -210,16 +210,20 @@ func build(g report.Finding, kind, loc string, sev finding.Severity, title, secr
 	// secret: a 4-character prefix can be guessed back from a published hash.
 	// numberRepeats gives the occurrence number once all findings are known.
 	evidence := finding.Redact(secret) + evSuffix
+	conf, fullTitle := finding.Certain, title+" ("+g.RuleID+")"
+	if why := lowerReason(loc, g); why != "" {
+		conf, fullTitle = finding.Suspect, fullTitle+" - "+why
+	}
 	return finding.Finding{
 		ID:          id,
 		Source:      "secrets",
 		Kind:        kind,
 		Severity:    sev,
-		Confidence:  confidenceFor(loc),
+		Confidence:  conf,
 		Location:    loc,
 		Line:        g.StartLine,
 		Evidence:    evidence,
-		Title:       title + " (" + g.RuleID + ")",
+		Title:       fullTitle,
 		ExplainKo:   explain,
 		Fix:         fix,
 		Fingerprint: finding.MakeMaskedFingerprint(id, loc, evidence, 0),
@@ -457,21 +461,70 @@ func hasGit(root string) bool {
 	}
 }
 
-var testDirs = map[string]bool{
-	"test": true, "tests": true, "__tests__": true,
-	"example": true, "examples": true, "fixtures": true,
-}
+// testDirs, exampleDirs and docDirs are folder names whose files are
+// usually tests, examples or documentation. A key there is more often a
+// sample, so it is shown as "의심" with the reason; it is never dropped and its
+// severity stays, since a real key can sit in a test folder too.
+var (
+	testDirs = map[string]bool{
+		"test": true, "tests": true, "__tests__": true, "spec": true, "testdata": true,
+		"fixtures": true, "__fixtures__": true, "mocks": true, "__mocks__": true,
+	}
+	exampleDirs = map[string]bool{"example": true, "examples": true, "sample": true, "samples": true, "demo": true, "demos": true}
+	docDirs     = map[string]bool{"docs": true, "doc": true}
+	docExts     = []string{".md", ".mdx", ".rst", ".adoc"}
+	// hashNames are words in a value's name that say it is a hash, not a key.
+	hashNames = []string{"hash", "digest", "checksum"}
+	// passwordHashPrefixes start the stored forms of argon2, bcrypt, scrypt,
+	// PBKDF2 and SHA-crypt password hashes.
+	passwordHashPrefixes = []string{"$argon2", "$2a$", "$2b$", "$2y$", "$scrypt", "$pbkdf2", "$5$", "$6$"}
+	uuidShape            = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+)
 
-// confidenceFor returns Suspect when any directory in the path looks like
-// test or example code.
-func confidenceFor(loc string) finding.Confidence {
-	parts := strings.Split(loc, "/")
+// lowerReason says why a secret finding is shown as "의심", or "" when it is
+// not: where the file is, or for generic-api-key what the value looks like.
+func lowerReason(loc string, g report.Finding) string {
+	parts := strings.Split(strings.ToLower(loc), "/")
+	name := parts[len(parts)-1]
 	for _, p := range parts[:len(parts)-1] {
-		if testDirs[strings.ToLower(p)] {
-			return finding.Suspect
+		switch {
+		case testDirs[p]:
+			return "시험 폴더에 있음, 시험용 값인지 확인"
+		case exampleDirs[p]:
+			return "예제 폴더에 있음, 예시 값인지 확인"
+		case docDirs[p] || strings.HasSuffix(p, "-docs") || strings.HasSuffix(p, "_docs"):
+			return "문서에 있음, 예시 값인지 확인"
 		}
 	}
-	return finding.Certain
+	base := strings.TrimSuffix(name, filepath.Ext(name))
+	if strings.HasSuffix(base, "_test") || strings.HasSuffix(base, ".test") || strings.HasSuffix(base, ".spec") ||
+		strings.HasPrefix(name, "test_") && strings.HasSuffix(name, ".py") {
+		return "시험 파일에 있음, 시험용 값인지 확인"
+	}
+	for _, ext := range docExts {
+		if strings.HasSuffix(name, ext) {
+			return "문서에 있음, 예시 값인지 확인"
+		}
+	}
+	if g.RuleID != "generic-api-key" {
+		return ""
+	}
+	if uuidShape.MatchString(g.Secret) {
+		return "UUID 모양 값, 키인지 확인"
+	}
+	for _, p := range passwordHashPrefixes {
+		if strings.HasPrefix(g.Secret, p) {
+			return "비밀번호 해시 모양 값, 키인지 확인"
+		}
+	}
+	// The name is what the match holds before the value.
+	before, _, _ := strings.Cut(strings.ToLower(g.Match), strings.ToLower(g.Secret))
+	for _, h := range hashNames {
+		if strings.Contains(before, h) {
+			return "이름으로 보아 해시 값, 키인지 확인"
+		}
+	}
+	return ""
 }
 
 const supabasePublishablePrefix = "sb_publishable_"
