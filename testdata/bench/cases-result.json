@@ -1,0 +1,50 @@
+{
+  "clean-app": {
+    "expected": 0,
+    "found": [],
+    "missed": [],
+    "extra": []
+  },
+  "fake-assignment": {
+    "expected": 6,
+    "found": [
+      "AR-001 @ .vscode/tasks.json",
+      "AR-002 @ .devcontainer/devcontainer.json",
+      "AR-003 @ .devcontainer/devcontainer.json",
+      "AR-004 @ .mcp.json",
+      "AR-005 @ package.json",
+      "AR-006 @ .adkignore"
+    ],
+    "missed": [],
+    "extra": []
+  },
+  "sample-app": {
+    "expected": 10,
+    "found": [
+      "FA-001 @ main.py",
+      "FA-002 @ main.py",
+      "KR-AUTH-001 @ app/login/route.ts",
+      "KR-PAY-001 @ app/api/toss/webhook/route.ts",
+      "KR-PAY-002 @ app/webhook.py",
+      "NX-001 @ middleware.ts",
+      "SB-001 @ supabase/migrations/20260101000000_init.sql",
+      "SB-002 @ .env.local",
+      "SB-003 @ app/admin/page.tsx",
+      "SECRET-* @ app/config.py"
+    ],
+    "missed": [],
+    "extra": []
+  },
+  "tricky-app": {
+    "expected": 4,
+    "found": [
+      "SB-003 @ app/admin/page.tsx"
+    ],
+    "missed": [
+      "FA-001 @ main.py",
+      "KR-AUTH-001 @ app/login/route.ts",
+      "PH-003 @ public/order.php"
+    ],
+    "extra": []
+  }
+}

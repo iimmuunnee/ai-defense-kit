@@ -1,0 +1,9 @@
+{
+  "note": "testdata/bench/cases/tricky-app에 패턴 규칙이 놓치기 쉬운 모양으로 넣은 문제. adk를 돌리기 전에 적었다.",
+  "expected": [
+    {"location": "app/login/route.ts", "id": "KR-AUTH-001"},
+    {"location": "app/admin/page.tsx", "id": "SB-003"},
+    {"location": "main.py", "id": "FA-001"},
+    {"location": "public/order.php", "id": "PH-003"}
+  ]
+}

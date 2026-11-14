@@ -20,6 +20,8 @@ f0a0021b9ad6f377
 6e1688e6b77820d6
 # FA-001 testdata/e2e/sample-app/main.py:8 - 점검 시연용 샘플 앱에 일부러 넣은 취약 표본
 4af8fd9794debb30
+# SB-003 testdata/bench/cases/tricky-app/app/admin/page.tsx:7 - 벤치마크 재현 세트에 일부러 넣은 취약 표본
+c09c2e2569c3a567
 # FA-001 testdata/rules/FA-001/vulnerable/multiline/main.py:8 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
 8a2203ecf31f6d18
 # FA-001 testdata/rules/FA-001/vulnerable/reversed/main.py:8 - 규칙 시험용으로 일부러 취약하게 만든 표본 코드
