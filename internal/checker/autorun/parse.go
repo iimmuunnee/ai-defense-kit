@@ -777,9 +777,11 @@ func (c *collector) parseSettings(root map[string]any) {
 					walk(e)
 				}
 			case map[string]any:
-				if x["type"] == "command" && !isEmpty(x["command"]) {
+				if reportedHook(x) {
 					n++
-					c.add(entry{id: "AR-004", evidence: c.plainText(event, false) + ": " + c.compactJSON(x, false, maxInJSON, false), raw: []any{event, x}})
+					// Header values of http and unknown hooks are hidden as for MCP servers.
+					hideAll := x["type"] != "command"
+					c.add(entry{id: "AR-004", evidence: c.plainText(event, false) + ": " + c.compactJSON(x, hideAll, maxInJSON, false), raw: []any{event, x}})
 				}
 				for _, k := range sortedKeys(x) {
 					walk(x[k])
@@ -787,6 +789,29 @@ func (c *collector) parseSettings(root map[string]any) {
 			}
 		}
 		walk(hooks[event])
+	}
+}
+
+// quietHookTypes are hook types that neither run a command nor send to an
+// address of their own: a prompt or agent hook asks the model, an mcp_tool
+// hook calls a server that .mcp.json already shows.
+var quietHookTypes = map[string]bool{"prompt": true, "agent": true, "mcp_tool": true}
+
+// reportedHook says whether a hook entry is shown: a command hook with a
+// command, an http hook with a url, and any type adk does not know, so a new
+// kind of hook is not passed over in silence.
+func reportedHook(x map[string]any) bool {
+	typ, ok := x["type"].(string)
+	if !ok || typ == "" {
+		return false
+	}
+	switch {
+	case typ == "command":
+		return !isEmpty(x["command"])
+	case typ == "http":
+		return !isEmpty(x["url"])
+	default:
+		return !quietHookTypes[typ]
 	}
 }
 
