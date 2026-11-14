@@ -5,7 +5,7 @@
 | 분류 | 점검 내용 |
 |---|---|
 | 🔑 노출된 키 | 코드와 **git 기록**에 남은 API 키·비밀번호. 지운 파일에 남아 있던 키도 찾습니다 |
-| 📦 취약한 라이브러리 | 잠금 파일과 `==`로 고정한 `requirements.txt`를 OSV와 대조합니다. 실제 공격 중(CISA KEV)이면 치명으로 올립니다 |
+| 📦 취약한 라이브러리 | 잠금 파일과 `==`로 고정한 `requirements.txt`를 OSV와 대조합니다. 실제 공격 중(CISA KEV)이면 치명으로 올립니다. 결과는 공지(GHSA 등)마다 한 건이지만, Markdown 리포트는 잠금 파일과 라이브러리@버전마다 한 절로 묶고 "모두 고치려면 올릴 버전"을 함께 보여 줍니다. `docs`, `examples`, `testdata`, `fixtures`, `test(s)`, `demo` 같은 폴더(`dev-docs`처럼 `-docs`로 끝나는 폴더 포함)의 잠금 파일은 앱 본체가 아닐 수 있어 판단을 "의심"으로 낮추고 리포트 끝에 따로 모읍니다. 등급과 종료 코드는 그대로이고, JSON·SARIF에는 공지마다 한 건씩 그대로 남습니다(JSON에는 `package` 필드 추가) |
 | 💳 결제 웹훅 | 토스페이먼츠(`KR-PAY-001`), 포트원(`KR-PAY-002`) 알림을 검증 없이 믿는 코드 |
 | 🔐 소셜 로그인 | 카카오(`KR-AUTH-001`), 네이버(`KR-AUTH-002`) 로그인의 `state` 누락 |
 | 🗄️ Supabase | RLS(행 단위 보안)를 켜지 않은 테이블(`SB-001`), 브라우저로 나가는 비밀 키(`SB-002`, `SB-003`) |
@@ -169,7 +169,7 @@ adk scan ./받은-과제 --untrusted --format md,json --out ./report
 | `AR-001` | `.vscode/tasks.json`에서 `runOn`이 `default`가 아닌 작업(`folderOpen` 등) | 높음 |
 | `AR-002` | `devcontainer.json`의 `initializeCommand`(호스트에서 실행) | 높음 |
 | `AR-003` | `devcontainer.json`의 `onCreateCommand`, `updateContentCommand`, `postCreateCommand`, `postStartCommand`, `postAttachCommand` | 보통 |
-| `AR-004` | `.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json`(`servers`, `mcpServers`)에서 `command`, `headersHelper`, `url` 중 하나가 있는 서버. `.claude/settings.json`, `.claude/settings.local.json`의 `hooks` 명령과 도우미 명령(`apiKeyHelper`, `awsAuthRefresh`, `awsCredentialExport`, `fileSuggestion`, `gcpAuthRefresh`, `otelHeadersHelper`, `statusLine`, `subagentStatusLine`) | 보통 |
+| `AR-004` | `.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json`(`servers`, `mcpServers`)에서 `command`, `headersHelper`, `url` 중 하나가 있는 서버. `.claude/settings.json`, `.claude/settings.local.json`의 `hooks` 중 명령(`command`)과 주소로 보내는(`http`) 항목, adk가 모르는 종류의 항목, 도우미 명령(`apiKeyHelper`, `awsAuthRefresh`, `awsCredentialExport`, `fileSuggestion`, `gcpAuthRefresh`, `otelHeadersHelper`, `statusLine`, `subagentStatusLine`) | 보통 |
 | `AR-005` | `package.json`의 설치 때 도는 스크립트 | 낮음(참고) |
 | `AR-006` | 결과를 바꿀 수 있는 설정 파일 (`.adkignore`, `osv-scanner.toml`) | 낮음(참고) |
 | `MAL-*` | OSV에 악성 패키지로 올라 있는 라이브러리 | 치명 |
