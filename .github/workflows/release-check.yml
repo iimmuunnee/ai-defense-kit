@@ -1,0 +1,77 @@
+name: Release check
+
+# 릴리스에 올라간 실행 파일을 각 운영체제에서 실제로 받아 돌려 본다.
+# 릴리스가 올라갈 때와, 지난 릴리스를 다시 확인하고 싶을 때 손으로 돌린다.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 확인할 릴리스 태그 (예 v0.1.0)
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  run-release:
+    name: run (${{ matrix.asset }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      attestations: read # 출처 증명 확인
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, asset: adk_linux_amd64 }
+          - { os: ubuntu-24.04-arm, asset: adk_linux_arm64 }
+          - { os: macos-latest, asset: adk_darwin_arm64 }
+          - { os: windows-latest, asset: adk_windows_amd64.exe }
+    steps:
+      # 예제 저장소(testdata)를 쓰려고 받는다. 실행 파일은 릴리스에서 받는다.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: 릴리스 파일 받기와 해시 확인
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          ASSET: ${{ matrix.asset }}
+        run: |
+          mkdir -p rel
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir rel -p "$ASSET" -p SHA256SUMS
+          cd rel
+          if command -v sha256sum >/dev/null; then sum=sha256sum; else sum="shasum -a 256"; fi
+          grep " $ASSET\$" SHA256SUMS | $sum -c -
+      - name: 출처 증명 확인
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ASSET: ${{ matrix.asset }}
+        run: gh attestation verify "rel/$ASSET" --repo "$GITHUB_REPOSITORY"
+      - name: version
+        shell: bash
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          ASSET: ${{ matrix.asset }}
+        run: |
+          chmod +x "rel/$ASSET"
+          out="$("rel/$ASSET" version)"
+          echo "$out"
+          case "$out" in *"${TAG#v}"*) ;; *) echo "버전에 ${TAG#v}가 없음"; exit 1 ;; esac
+      - name: 예제 점검
+        shell: bash
+        env:
+          ASSET: ${{ matrix.asset }}
+        run: |
+          set +e
+          "rel/$ASSET" scan testdata/untrusted/fake-assignment --untrusted --offline --format json --out out
+          code=$?
+          set -e
+          # 자동 실행 설정이 있는 예제라 "높음" 결과가 나와 종료 코드 1이 정상이다.
+          if [ "$code" != 1 ]; then echo "종료 코드 $code (1이어야 함)"; exit 1; fi
+          grep -q '"AR-001"' out/adk-report.json
