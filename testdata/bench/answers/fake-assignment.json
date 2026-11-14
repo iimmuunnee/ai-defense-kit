@@ -1,0 +1,11 @@
+{
+  "note": "testdata/untrusted/fake-assignment를 --untrusted로 점검. 열거나 설치할 때 자동으로 실행되는 설정과 결과를 숨길 수 있는 설정.",
+  "expected": [
+    {"location": ".vscode/tasks.json", "id": "AR-001"},
+    {"location": ".devcontainer/devcontainer.json", "id": "AR-002"},
+    {"location": ".devcontainer/devcontainer.json", "id": "AR-003"},
+    {"location": ".mcp.json", "id": "AR-004"},
+    {"location": "package.json", "id": "AR-005"},
+    {"location": ".adkignore", "id": "AR-006"}
+  ]
+}

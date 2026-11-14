@@ -1,0 +1,4 @@
+{
+  "note": "testdata/bench/cases/clean-app은 sample-app과 같은 기능을 문제 없이 짠 앱이다. 나오는 결과는 모두 정답표 밖 결과(오탐 후보)다.",
+  "expected": []
+}

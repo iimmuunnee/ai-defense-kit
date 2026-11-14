@@ -1,0 +1,15 @@
+{
+  "note": "testdata/e2e/sample-app에 일부러 넣은 문제. 규칙을 만든 사람이 파일을 읽고 적은 정답이다. 의존성 결과는 가짜 OSV 자료에서 나오므로 세지 않는다.",
+  "expected": [
+    {"location": ".env.local", "id": "SB-002"},
+    {"location": "app/admin/page.tsx", "id": "SB-003"},
+    {"location": "app/api/toss/webhook/route.ts", "id": "KR-PAY-001"},
+    {"location": "app/config.py", "id": "SECRET-*"},
+    {"location": "app/login/route.ts", "id": "KR-AUTH-001"},
+    {"location": "app/webhook.py", "id": "KR-PAY-002"},
+    {"location": "main.py", "id": "FA-001"},
+    {"location": "main.py", "id": "FA-002"},
+    {"location": "middleware.ts", "id": "NX-001"},
+    {"location": "supabase/migrations/20260101000000_init.sql", "id": "SB-001"}
+  ]
+}
