@@ -34,6 +34,8 @@ func statusKo(s checker.Status) string {
 		return "실패"
 	case checker.StatusSkipped:
 		return "건너뜀"
+	case checker.StatusPartial:
+		return "일부만 점검"
 	}
 	return "완료"
 }
@@ -79,6 +81,7 @@ func WriteMarkdown(w io.Writer, r Report) error {
 		}
 		fmt.Fprintf(&b, "- git 커밋: %s\n", commit)
 	}
+	writeDurations(&b, r.Checks)
 	if r.Untrusted {
 		b.WriteString("- 받은 저장소 모드: --untrusted\n")
 	}
@@ -103,6 +106,20 @@ func WriteMarkdown(w io.Writer, r Report) error {
 	b.WriteString(Disclaimer + "\n")
 	_, err := io.WriteString(w, b.String())
 	return err
+}
+
+// writeDurations prints how long each measured check ran, in seconds. Checks
+// RunAll did not run (watch, device) have no duration and no line.
+func writeDurations(b *strings.Builder, checks []checker.CheckStatus) {
+	var parts []string
+	for _, c := range checks {
+		if c.DurationMS != nil {
+			parts = append(parts, fmt.Sprintf("%s %.1f초", c.Name, float64(*c.DurationMS)/1000))
+		}
+	}
+	if len(parts) > 0 {
+		fmt.Fprintf(b, "- 걸린 시간: %s\n", strings.Join(parts, ", "))
+	}
 }
 
 // writeChecks prints the warning block and reports whether any check failed

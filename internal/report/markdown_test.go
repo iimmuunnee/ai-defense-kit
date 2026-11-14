@@ -388,3 +388,42 @@ func TestDeviceJSONLeavesOutFolderFields(t *testing.T) {
 		t.Errorf("code json changed:\n%s", buf.String())
 	}
 }
+
+func TestMarkdownShowsPartialCheck(t *testing.T) {
+	r := Report{Target: "x", ScannedAt: time.Now(), Checks: []checker.CheckStatus{
+		{Name: "secrets", Status: checker.StatusPartial, Error: "시간 제한(5m0s)을 넘겨 중단됨", Warnings: []string{"과거 커밋을 다 보지 못함"}},
+	}}
+	var buf bytes.Buffer
+	if err := WriteMarkdown(&buf, r); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "secrets (일부만 점검): 시간 제한(5m0s)을 넘겨 중단됨") {
+		t.Errorf("partial check not shown:\n%s", out)
+	}
+	if strings.Contains(out, "찾은 문제가 없습니다") {
+		t.Errorf("must not claim no problems:\n%s", out)
+	}
+}
+
+// 점검별 걸린 시간을 머리말에 한 줄로 보여 준다. 잰 값이 없으면(watch, device) 줄도 없다.
+func TestMarkdownShowsDurations(t *testing.T) {
+	ms := func(v int64) *int64 { return &v }
+	r := Report{Target: "x", ScannedAt: time.Now(), Checks: []checker.CheckStatus{
+		{Name: "rules", Status: checker.StatusOK, DurationMS: ms(120)},
+		{Name: "secrets", Status: checker.StatusPartial, DurationMS: ms(300000)},
+	}}
+	var buf bytes.Buffer
+	if err := WriteMarkdown(&buf, r); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "- 걸린 시간: rules 0.1초, secrets 300.0초\n") {
+		t.Errorf("durations not shown:\n%s", buf.String())
+	}
+	buf.Reset()
+	r.Checks = []checker.CheckStatus{{Name: "watch", Status: checker.StatusOK}}
+	_ = WriteMarkdown(&buf, r)
+	if strings.Contains(buf.String(), "걸린 시간") {
+		t.Errorf("duration line without durations:\n%s", buf.String())
+	}
+}

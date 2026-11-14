@@ -65,6 +65,10 @@ const (
 	StatusOK      Status = "ok"
 	StatusFailed  Status = "failed"
 	StatusSkipped Status = "skipped"
+	// StatusPartial is a checker stopped by its timeout after it had saved the
+	// results of its earlier stages (SavePartial). Those results are reported
+	// and its warnings say what was left out.
+	StatusPartial Status = "partial"
 )
 
 // CheckStatus records how one checker ended.
@@ -76,6 +80,10 @@ type CheckStatus struct {
 	// Notes are remarks on a check that did complete. Unlike Warnings they do
 	// not say that anything is missing from the results.
 	Notes []string `json:"notes,omitempty"`
+	// DurationMS is how long the checker ran, in milliseconds, as RunAll
+	// measured it. nil when not measured (watch, device). It is not part of
+	// the evidence file or SARIF.
+	DurationMS *int64 `json:"duration_ms,omitempty"`
 	// External is not part of adk-report.json.
 	External []ExternalData `json:"-"`
 }
