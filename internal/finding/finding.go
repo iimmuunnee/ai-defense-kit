@@ -94,21 +94,24 @@ type Mapping struct {
 }
 
 type Finding struct {
-	ID          string     `json:"id"`
-	Kind        string     `json:"kind"`
-	Source      string     `json:"source"`
-	Severity    Severity   `json:"severity"`
-	Exploited   bool       `json:"exploited"`
-	Confidence  Confidence `json:"confidence"`
-	Location    string     `json:"location"`
-	Line        int        `json:"line"`
-	Evidence    string     `json:"evidence"`
-	Title       string     `json:"title"`
-	ExplainKo   string     `json:"explain_ko"`
-	Fix         string     `json:"fix"`
-	References  []string   `json:"references"`
-	Mappings    []Mapping  `json:"mappings"`
-	Fingerprint string     `json:"fingerprint"`
+	ID         string     `json:"id"`
+	Kind       string     `json:"kind"`
+	Source     string     `json:"source"`
+	Severity   Severity   `json:"severity"`
+	Exploited  bool       `json:"exploited"`
+	Confidence Confidence `json:"confidence"`
+	Location   string     `json:"location"`
+	Line       int        `json:"line"`
+	Evidence   string     `json:"evidence"`
+	// Package is "name@version" for a library finding, so a report can group
+	// the advisories of one version. Empty for other findings.
+	Package     string    `json:"package,omitempty"`
+	Title       string    `json:"title"`
+	ExplainKo   string    `json:"explain_ko"`
+	Fix         string    `json:"fix"`
+	References  []string  `json:"references"`
+	Mappings    []Mapping `json:"mappings"`
+	Fingerprint string    `json:"fingerprint"`
 }
 
 // MakeFingerprint returns a stable 16-hex-char id for a finding whose identity

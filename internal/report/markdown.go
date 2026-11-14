@@ -3,6 +3,7 @@ package report
 import (
 	"fmt"
 	"io"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -97,6 +98,7 @@ func WriteMarkdown(w io.Writer, r Report) error {
 		writeTop(&b, fs)
 		writeSummary(&b, fs, r.Ignored)
 		writeDetails(&b, fs, r.NoIgnoreAdvice)
+		writeDocsLibs(&b, fs, r.NoIgnoreAdvice)
 	}
 
 	b.WriteString("---\n\n")
@@ -150,18 +152,31 @@ func oneLine(s string) string {
 }
 
 func writeTop(b *strings.Builder, fs []finding.Finding) {
-	var top []finding.Finding
+	// A library version is one line however many advisories it has, and
+	// documentation or example lockfiles are left out.
+	_, libs := libGroups(fs)
+	var top []string
+	shown := map[string]bool{}
 	for _, f := range fs {
-		if f.Severity != finding.Info && len(top) < topCount {
-			top = append(top, f)
+		if f.Severity == finding.Info || len(top) == topCount || isDocsLib(f) {
+			continue
 		}
+		title := f.Title
+		if isLib(f) {
+			if shown[libKey(f)] {
+				continue
+			}
+			shown[libKey(f)] = true
+			title = libTitle(libs[libKey(f)])
+		}
+		top = append(top, fmt.Sprintf("[%s] %s - `%s`", severityKo[f.Severity], markdownText(title), codeSpanLocation(f)))
 	}
 	if len(top) == 0 {
 		return
 	}
 	b.WriteString("## 지금 당장 고칠 것\n\n")
-	for i, f := range top {
-		fmt.Fprintf(b, "%d. [%s] %s - `%s`\n", i+1, severityKo[f.Severity], markdownText(f.Title), codeSpanLocation(f))
+	for i, line := range top {
+		fmt.Fprintf(b, "%d. %s\n", i+1, line)
 	}
 	b.WriteString("\n")
 }
@@ -180,6 +195,7 @@ func writeSummary(b *strings.Builder, fs []finding.Finding, ignored int) {
 	if ignored > 0 {
 		fmt.Fprintf(b, "무시함: %d개 (.adkignore)\n\n", ignored)
 	}
+	writeLibSummary(b, fs)
 }
 
 // writeDetails prints the findings. Findings of one number whose severity,
@@ -187,13 +203,23 @@ func writeSummary(b *strings.Builder, fs []finding.Finding, ignored int) {
 // section: that text is printed once and the findings are listed under it. A
 // finding that shares its text with no other keeps a section of its own.
 func writeDetails(b *strings.Builder, fs []finding.Finding, noIgnoreAdvice bool) {
+	if !slices.ContainsFunc(fs, func(f finding.Finding) bool { return !isDocsLib(f) }) {
+		return // only documentation or example lockfiles: writeDocsLibs prints them
+	}
 	b.WriteString("## 상세\n\n")
 	// Sections come in the order of their first finding, and the findings of
 	// a section stay in the order of fs.
 	var order []string
 	groups := map[string][]finding.Finding{}
+	_, libs := libGroups(fs)
 	for _, f := range fs {
+		if isDocsLib(f) {
+			continue // printed by writeDocsLibs
+		}
 		k := sharedTextKey(f)
+		if isLib(f) {
+			k = "lib\x00" + libKey(f)
+		}
 		if _, ok := groups[k]; !ok {
 			order = append(order, k)
 		}
@@ -202,6 +228,10 @@ func writeDetails(b *strings.Builder, fs []finding.Finding, noIgnoreAdvice bool)
 	for _, k := range order {
 		g := groups[k]
 		f := g[0]
+		if isLib(f) {
+			writeLibSection(b, libs[libKey(f)], noIgnoreAdvice)
+			continue
+		}
 		if len(g) == 1 {
 			fmt.Fprintf(b, "### [%s] %s\n\n", severityKo[f.Severity], markdownText(f.Title))
 			fmt.Fprintf(b, "- 번호: %s\n", f.ID)

@@ -255,9 +255,10 @@ func (c depsChecker) Run(ctx context.Context, t checker.Target) (checker.Result,
 			Kind:        kind,
 			Severity:    sev,
 			Exploited:   exploited,
-			Confidence:  finding.Certain,
+			Confidence:  lockfileConfidence(loc),
 			Location:    loc,
 			Evidence:    pkg + " (" + memo + ")",
+			Package:     pkg,
 			Title:       title,
 			ExplainKo:   explain,
 			Fix:         fix,
@@ -630,4 +631,30 @@ func (c depsChecker) explain(name string) string {
 		return ""
 	}
 	return string(b)
+}
+
+// notAppDirs are folder names that usually hold a documentation site, examples
+// or test data rather than the app itself.
+var notAppDirs = map[string]bool{
+	"docs": true, "doc": true, "examples": true, "example": true, "samples": true, "sample": true,
+	"demo": true, "demos": true, "testdata": true, "fixtures": true, "test": true, "tests": true, "__tests__": true,
+}
+
+// lockfileConfidence is Suspect for a lockfile under a documentation, example
+// or test folder (also "dev-docs", "my_examples"): it may not be the app's
+// own. The finding is kept and its severity is unchanged.
+func lockfileConfidence(loc string) finding.Confidence {
+	parts := strings.Split(loc, "/")
+	for _, p := range parts[:len(parts)-1] {
+		p = strings.ToLower(p)
+		if notAppDirs[p] {
+			return finding.Suspect
+		}
+		for _, suf := range []string{"docs", "examples"} {
+			if strings.HasSuffix(p, "-"+suf) || strings.HasSuffix(p, "_"+suf) {
+				return finding.Suspect
+			}
+		}
+	}
+	return finding.Certain
 }
