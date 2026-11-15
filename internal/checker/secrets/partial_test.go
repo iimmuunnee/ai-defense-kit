@@ -35,9 +35,9 @@ func TestHistoryTimeoutKeepsCurrentFindings(t *testing.T) {
 
 	old := historyScanner
 	t.Cleanup(func() { historyScanner = old })
-	historyScanner = func(ctx context.Context, _ string, _ bool) ([]report.Finding, bool, error) {
+	historyScanner = func(ctx context.Context, _ string, _ bool) (historyScan, error) {
 		<-ctx.Done()
-		return nil, false, ctx.Err()
+		return historyScan{}, ctx.Err()
 	}
 
 	fs, st := checker.RunAll(context.Background(), []checker.Checker{New(aidefensekit.Data)}, checker.Target{Root: root}, 3*time.Second)

@@ -17,6 +17,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"unicode"
 
 	"github.com/rs/zerolog"
 	"github.com/zricethezav/gitleaks/v8/cmd/scm"
@@ -31,7 +32,11 @@ import (
 )
 
 const (
-	maxFileSize        = 1 << 20 // 1MB
+	maxFileSize = 1 << 20 // 1MB
+	// historyMaxSize is the largest single change the history scan checks.
+	// Larger than maxFileSize so that a committed bundle over 1MB is still
+	// checked once; see sizeLimited.
+	historyMaxSize     = 5 << 20 // 5MB
 	warnNoGit          = "git 기록이 없어 과거 커밋은 확인하지 못했습니다."
 	warnHistoryPartial = "git 기록을 읽지 못해 과거 커밋 일부는 확인하지 못했습니다 (git 오류 또는 빠진 객체)."
 	// warnHistoryUnfinished goes with the current-file results saved before the
@@ -77,10 +82,14 @@ func (c secretsChecker) Run(ctx context.Context, t checker.Target) (checker.Resu
 			Findings: merge(root, current, nil, explainCur, explainHist),
 			Warnings: []string{warnHistoryUnfinished},
 		})
-		var partial bool
-		history, partial, err = historyScanner(ctx, root, t.Untrusted)
-		if err == nil && partial {
+		var hs historyScan
+		hs, err = historyScanner(ctx, root, t.Untrusted)
+		history = hs.Findings
+		if err == nil && hs.Partial {
 			res.Warnings = append(res.Warnings, warnHistoryPartial)
+		}
+		if err == nil && len(hs.SkippedLarge) > 0 {
+			res.Warnings = append(res.Warnings, skippedLargeWarning(hs.SkippedLarge))
 		}
 		if err != nil {
 			if ctx.Err() != nil {
@@ -294,15 +303,23 @@ func scanFiles(ctx context.Context, root string, untrusted bool) ([]report.Findi
 	})
 }
 
-// scanHistory scans git history. partial reports that git wrote an error
-// while gitleaks read the log: gitleaks then stops reading and only logs it.
-func scanHistory(ctx context.Context, root string, untrusted bool) (out []report.Finding, partial bool, err error) {
+// historyScan is what scanHistory found. Partial reports that git wrote an
+// error while gitleaks read the log: gitleaks then stops reading and only logs
+// it. SkippedLarge lists the paths whose changes were too big to check.
+type historyScan struct {
+	Findings     []report.Finding
+	Partial      bool
+	SkippedLarge []string
+}
+
+// scanHistory scans git history.
+func scanHistory(ctx context.Context, root string, untrusted bool) (hs historyScan, err error) {
 	if _, err := exec.LookPath("git"); err != nil {
-		return nil, false, err
+		return hs, err
 	}
 	d, err := newDetector("", untrusted)
 	if err != nil {
-		return nil, false, err
+		return hs, err
 	}
 	opts, config, env := gitLogOpts, safeGitConfig, safeGitEnv
 	if untrusted {
@@ -319,17 +336,95 @@ func scanHistory(ctx context.Context, root string, untrusted bool) (out []report
 		if err != nil {
 			return err
 		}
-		src := &errTracking{inner: &sources.Git{
+		tracked := &errTracking{inner: &sources.Git{
 			Cmd:    cmd,
 			Config: &d.Config,
 			Sema:   d.Sema,
 			Remote: &sources.RemoteInfo{Platform: scm.NoPlatform}, // no links, no remote lookups
 		}}
-		out, err = d.DetectSource(ctx, src)
-		partial = src.failed.Load()
+		src := &sizeLimited{inner: tracked, max: historyMaxSize, allow: d.Config.Allowlists}
+		hs.Findings, err = d.DetectSource(ctx, src)
+		hs.Partial = tracked.failed.Load()
+		hs.SkippedLarge = src.skippedPaths()
 		return err
 	})
-	return out, partial, err
+	return hs, err
+}
+
+// sizeLimited drops history changes bigger than max before gitleaks checks
+// them, as sources.Files does for current files. gitleaks sets no size limit
+// on git history, and its cost grows with the size of a change and with how
+// random its text looks (base64 data: about 6-10 seconds per MB): one 25MB
+// HTML page with an inline image took over seven minutes.
+// Paths the scan never checks anyway (the global path allowlists, such as
+// dependency folders) are passed on, so only the rest are listed as skipped.
+type sizeLimited struct {
+	inner sources.Source
+	max   int
+	allow []*config.Allowlist
+
+	mu      sync.Mutex
+	skipped map[string]bool
+}
+
+func (s *sizeLimited) Fragments(ctx context.Context, yield sources.FragmentsFunc) error {
+	return s.inner.Fragments(ctx, func(f sources.Fragment, err error) error {
+		if err != nil || len(f.Raw) <= s.max || s.pathAllowed(f.FilePath) {
+			return yield(f, err)
+		}
+		s.mu.Lock() // gitleaks yields from several goroutines
+		if s.skipped == nil {
+			s.skipped = map[string]bool{}
+		}
+		s.skipped[f.FilePath] = true
+		s.mu.Unlock()
+		return nil
+	})
+}
+
+// pathAllowed mirrors gitleaks' path check for "OR" allowlists, which drops
+// the change before any rule runs.
+func (s *sizeLimited) pathAllowed(path string) bool {
+	for _, a := range s.allow {
+		if a.MatchCondition != config.AllowlistMatchAnd && a.PathAllowed(path) {
+			return true
+		}
+	}
+	return false
+}
+
+// skippedPaths returns the skipped paths, sorted.
+func (s *sizeLimited) skippedPaths() []string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := make([]string, 0, len(s.skipped))
+	for p := range s.skipped {
+		out = append(out, p)
+	}
+	slices.Sort(out)
+	return out
+}
+
+// skippedLargeWarning tells which history paths had changes over the size
+// limit, naming at most five. Paths come from the repository, so control
+// characters are removed and key-shaped text is hidden.
+func skippedLargeWarning(paths []string) string {
+	const shown = 5
+	names := make([]string, 0, shown)
+	for _, p := range paths[:min(len(paths), shown)] {
+		p = strings.Map(func(r rune) rune {
+			if unicode.Is(unicode.Cc, r) || unicode.Is(unicode.Cf, r) {
+				return -1
+			}
+			return r
+		}, p)
+		names = append(names, finding.ScrubNarrow(p))
+	}
+	list := strings.Join(names, ", ")
+	if len(paths) > shown {
+		list += fmt.Sprintf(" 외 %d개", len(paths)-shown)
+	}
+	return fmt.Sprintf("git 기록에서 5MB가 넘는 변경은 점검 시간이 너무 길어 건너뛰었습니다(파일 %d개: %s). 그 변경에만 든 비밀 키는 빠졌을 수 있습니다.", len(paths), list)
 }
 
 // errTracking records whether the source handed an error to the detector,
