@@ -76,7 +76,7 @@ func TestKeyMaterialNeverReachesAnyOutput(t *testing.T) {
 			}
 		}
 		// 지문과 해시는 16자리 이상 16진수 덩어리이므로 4글자 조각 비교에서 뺀다.
-		clean := longHex.ReplaceAllString(scrubTempPaths(text, filepath.Dir(app), filepath.Dir(out)), "")
+		clean := longHex.ReplaceAllString(scrubTiming(scrubTempPaths(text, filepath.Dir(app), filepath.Dir(out))), "")
 		for i := 0; i+4 <= len(key); i++ {
 			if strings.Contains(clean, key[i:i+4]) {
 				t.Errorf("%s: 4-char piece %q of the key", name, key[i:i+4])
