@@ -146,7 +146,7 @@ func TestWideShapesNeverReachAnyOutput(t *testing.T) {
 		if strings.Contains(low, key) {
 			t.Errorf("%s: full key printed", name)
 		}
-		clean := longHex.ReplaceAllString(low, "")
+		clean := longHex.ReplaceAllString(scrubTiming(low), "")
 		for i := 0; i+4 <= len(key); i++ {
 			if strings.Contains(clean, key[i:i+4]) {
 				t.Errorf("%s: 4-char piece %q of the key printed", name, key[i:i+4])

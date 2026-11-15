@@ -104,7 +104,7 @@ func TestFailClosedEvidenceThroughScan(t *testing.T) {
 				t.Errorf("%s: word %q printed", name, w)
 			}
 		}
-		clean := longHex.ReplaceAllString(scrubTempPaths(text, filepath.Dir(app), filepath.Dir(out)), "")
+		clean := longHex.ReplaceAllString(scrubTiming(scrubTempPaths(text, filepath.Dir(app), filepath.Dir(out))), "")
 		for _, g := range groups {
 			if strings.Contains(clean, g) {
 				t.Errorf("%s: 4-char piece %q of the key printed", name, g)

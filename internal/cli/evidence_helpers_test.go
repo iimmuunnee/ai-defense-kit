@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -151,6 +152,16 @@ func TestScanWritesEvidenceWithOut(t *testing.T) {
 // sarifSchemaPath is absolute so that tests which change the working folder
 // can still validate.
 var sarifSchemaPath, _ = filepath.Abs("../../testdata/sarif/sarif-schema-2.1.0.json")
+
+// timingValues matches a checker's run time and a timestamp, in either
+// case (some tests search lowercased text).
+var timingValues = regexp.MustCompile(`(?i)"duration_ms": *\d+|\d{4}-\d\d-\d\dt[0-9:.]+(z|[+-]\d\d:\d\d)`)
+
+// scrubTiming takes run times and timestamps out of an output before it is
+// searched for pieces of a fake value. Several fake keys have pieces made of
+// digits only (such as "1161"), which a run time in milliseconds or the
+// fraction of a second in a timestamp can match by chance.
+func scrubTiming(text string) string { return timingValues.ReplaceAllString(text, "") }
 
 // scrubTempPaths takes the test's own temp folders out of an output before it
 // is searched for pieces of a fake value. Their names end in random digits,

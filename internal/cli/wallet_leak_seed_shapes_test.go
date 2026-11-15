@@ -145,7 +145,7 @@ func TestSeedShapesNeverReachAnyOutput(t *testing.T) {
 		if strings.Contains(text, raw) {
 			t.Errorf("%s: full key", name)
 		}
-		clean := longHex.ReplaceAllString(scrubTempPaths(text, filepath.Dir(app), filepath.Dir(out)), "")
+		clean := longHex.ReplaceAllString(scrubTiming(scrubTempPaths(text, filepath.Dir(app), filepath.Dir(out))), "")
 		for i := 0; i+4 <= len(key); i++ {
 			if strings.Contains(clean, key[i:i+4]) {
 				at := strings.Index(clean, key[i:i+4])
