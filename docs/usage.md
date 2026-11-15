@@ -90,11 +90,26 @@ adk scan . --fail-on none
 | `--fail-on <등급>` | 이 등급 이상 문제가 있으면 종료 코드 1. 기본값 `high`. `critical`, `high`, `medium`, `low`, `none`(결과와 상관없이 1을 내지 않음) |
 | `--strict` | 점검기가 하나라도 실패하거나 시간 제한에 걸려 일부만 점검하면 종료 코드 2 (이 등급 이상 문제가 있으면 1이 먼저) |
 | `--offline` | 외부 통신 없이 점검. 의존성 점검은 `--osv-db`가 있을 때만 합니다 |
-| `--osv-db <경로>` | 오프라인 모드에서 쓸 OSV 데이터베이스 경로 |
+| `--osv-db <경로>` | 오프라인 모드에서 쓸 OSV 데이터베이스 폴더. 생태계마다 `<경로>/osv-scalibr/<생태계>/all.zip`에 둡니다(아래 참고) |
 | `--rules-dir <경로>` | 내장 규칙 대신 직접 만든 규칙 폴더 사용 |
 | `--untrusted` | 받은 저장소의 설정으로 결과가 숨겨지지 않게 점검. `.adkignore`, `osv-scanner.toml`, `.gitignore`, `.gitattributes`, 줄 안의 `gitleaks:allow`를 따르지 않습니다 |
 
 `--untrusted` 없이 점검하면 저장소의 `.gitignore`가 그대로 적용되어, 거기 적힌 잠금 파일은 의존성 점검에서 빠집니다. 내가 쓰지 않은 저장소는 `--untrusted`로 점검하세요.
+
+### 오프라인 DB 준비 (`--offline --osv-db`)
+
+OSV가 생태계마다 내놓는 `all.zip`을 받아, 점검할 저장소가 쓰는 생태계마다 아래 자리에 둡니다. 생태계 이름은 대소문자까지 그대로 씁니다(`npm`, `PyPI`, `Go`, `crates.io` 등).
+
+```bash
+mkdir -p osvdb/osv-scalibr/PyPI
+curl -o osvdb/osv-scalibr/PyPI/all.zip https://osv-vulnerabilities.storage.googleapis.com/PyPI/all.zip
+adk scan . --offline --osv-db osvdb
+```
+
+- 폴더 이름은 `osv-scalibr`입니다. osv-scanner 문서에 적힌 `osv-scanner` 폴더에 두면 adk가 쓰는 osv-scanner v2.7.0은 DB를 찾지 못합니다(2026-11-15 확인).
+- 저장소가 쓰는 생태계 중 하나라도 DB가 없으면 의존성 점검 전체가 `실패`로 기록됩니다. 결과 없이 "문제 없음"으로 나오지는 않습니다(`--strict`에서 종료 코드 2).
+- 크기 예(2026-11-15): PyPI 약 38MB, npm 약 221MB.
+- 받은 날 이후에 올라온 공지와 악성 패키지는 찾지 못합니다. 자주 다시 받으세요.
 
 ## 설치와 검증
 
@@ -177,7 +192,7 @@ adk scan ./받은-과제 --untrusted --format md,json --out ./report
 - 해석하지 못한 파일(깨진 JSON, 1MB 초과, 심볼릭 링크)은 같은 번호로 `의심` 결과를 내고 직접 확인하라고 알립니다. 등급은 그 파일이 낼 수 있는 가장 높은 등급입니다.
 - 파일마다 200건까지 알리고, 넘으면 일부만 보여 준다는 `의심` 결과를 하나 더 냅니다.
 - 근거는 설정의 JSON 원문입니다. 실행될 명령을 adk가 해석하지 않으며 `dependsOn` 대상은 따라가지 않습니다. `command`, `args`, `script`, `headersHelper`, `url`, OS별 블록을 먼저 보여 주고 나머지 키가 뒤따릅니다. `args`의 항목은 300자에서, 그 밖의 값은 120자에서 `…(잘림)`으로 줄입니다. 가리는 값은 gitleaks가 알아본 값, URL 비밀번호, 이름으로 알 수 있는 환경 변수 값이고 `--password hunter2` 같은 값은 보입니다. 개인 키처럼 보이는 블록은 항상 가리고 알리며 등급이 높음 이상이 됩니다. MCP의 `env`, `headers` 값은 어느 출력에도 넣지 않습니다.
-- `MAL-`은 온라인 조회에서 확인했습니다. 오프라인 DB 원본에도 `MAL-` 자료가 있는 것을 확인했지만, `--offline`으로 실제로 찾는지는 돌려 보지 못해 경고합니다([근거](research/2026-11-15-offline-mal-facts.md)).
+- `MAL-`은 온라인 조회와, PyPI 오프라인 DB를 쓴 `--offline` 점검에서 확인했습니다. npm 오프라인 DB로는 돌려 보지 않았습니다. 오프라인 점검은 DB를 받은 뒤에 올라온 악성 패키지를 찾지 못해 경고합니다([근거](research/2026-11-15-offline-mal-facts.md)).
 - **`--fail-on` 변경:** 자동 실행 설정이 있는 저장소는 이전과 결과가 달라질 수 있습니다. 정상적인 설정은 아래 `.adkignore`에 지문을 적어 무시하세요. 낮음(참고) 항목은 `--fail-on low`에서만 영향을 줍니다.
 - 시험용 예제: `testdata/untrusted/fake-assignment` (명령은 `echo adk-test`뿐). 그 `.adkignore`는 `AR-001`을 숨겨 두어, 옵션 없이는 숨김 경고가, `--untrusted`로는 결과가 나옵니다.
 
