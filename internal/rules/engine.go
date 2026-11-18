@@ -247,27 +247,50 @@ func firstRuleHit(content string, r Rule) (int, string) {
 // through its fingerprint leaves the others reported. Lines that look the same
 // once masked are told apart by their order in the file (see numberRepeats),
 // never by the value behind the mask. Masks apply to the matching too.
+// A rule with input_var_regex also matches a line read with its tracked
+// variables put back as the input they hold (see track.go); such a finding is a
+// suspect one, and its evidence is still the line as written.
 func lineFindings(r Rule, rel, content string, stacks []string, fsys fs.FS) []finding.Finding {
 	var out []finding.Finding
+	tr := newTracker(r, content)
 	for i, l := range strings.Split(content, "\n") {
-		allowed := regexAllowed(r, l)
-		if !allowed && len(r.Match.HasAny) == 0 {
-			continue
+		hit, tracked := lineMatches(r, l), false
+		if !hit && tr.active() {
+			hit = lineMatches(r, tr.substitute(l))
+			tracked = hit
 		}
-		if matchesAny(l, r.skipRe) {
-			continue
+		if hit {
+			f := build(r, rel, i+1, strings.TrimSpace(l), stacks, fsys)
+			if tracked {
+				f.Confidence = finding.Suspect
+			}
+			out = append(out, f)
 		}
-		masked := l
-		for _, re := range r.maskRe {
-			masked = re.ReplaceAllString(masked, "${keep}")
-		}
-		if !containsAny(masked, r.Match.HasAny) && !(allowed && matchesAny(masked, r.hasRe)) {
-			continue
-		}
-		out = append(out, build(r, rel, i+1, strings.TrimSpace(l), stacks, fsys))
+		tr.update(r, l)
 	}
 	numberRepeats(out)
 	return out
+}
+
+// lineMatches reports whether one line hits rule r once its masks are applied.
+func lineMatches(r Rule, l string) bool {
+	allowed := regexAllowed(r, l)
+	if !allowed && len(r.Match.HasAny) == 0 {
+		return false
+	}
+	if matchesAny(l, r.skipRe) {
+		return false
+	}
+	masked := applyMasks(r.maskRe, l)
+	return containsAny(masked, r.Match.HasAny) || (allowed && matchesAny(masked, r.hasRe))
+}
+
+// applyMasks removes what each mask matches, except a group named keep.
+func applyMasks(masks []*regexp.Regexp, s string) string {
+	for _, re := range masks {
+		s = re.ReplaceAllString(s, "${keep}")
+	}
+	return s
 }
 
 // numberRepeats gives the findings of one rule in one file, which arrive in

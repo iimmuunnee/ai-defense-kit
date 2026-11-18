@@ -28,6 +28,10 @@ type Match struct {
 	RequireAll   []string `yaml:"require_all"`
 	SkipLine     []string `yaml:"skip_line_regex"` // scope: line only
 	Mask         []string `yaml:"mask_regex"`      // scope: line only; removed before has_any_regex, except a group named keep
+	// InputVar (scope: line only): a variable assigned a value that matches one of
+	// these, once mask_regex is applied, is read as that matched text on the later
+	// lines of the same function (see track.go).
+	InputVar []string `yaml:"input_var_regex"`
 	// RegexRequires: has_any_regex runs only where one of these literals appears
 	// (the line for scope: line, the file otherwise). Each must be something every
 	// match of those regexes contains.
@@ -65,6 +69,7 @@ type Rule struct {
 	skipRe   []*regexp.Regexp
 	maskRe   []*regexp.Regexp
 	gateRe   []*regexp.Regexp
+	inputRe  []*regexp.Regexp
 }
 
 // Load reads every *.yaml under rules/ in fsys and validates it.
@@ -148,6 +153,12 @@ func (r *Rule) validate(fsys fs.FS) error {
 	}
 	if len(r.maskRe) > 0 && r.Match.Scope != "line" {
 		return fmt.Errorf("키 match.mask_regex: scope가 line일 때만 쓸 수 있음")
+	}
+	if r.inputRe, err = compileAll("match.input_var_regex", r.Match.InputVar); err != nil {
+		return err
+	}
+	if len(r.inputRe) > 0 && r.Match.Scope != "line" {
+		return fmt.Errorf("키 match.input_var_regex: scope가 line일 때만 쓸 수 있음")
 	}
 	if r.missRe, err = compileAll("match.missing_all_regex", r.Match.MissingRegex); err != nil {
 		return err

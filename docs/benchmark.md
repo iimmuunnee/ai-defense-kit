@@ -59,13 +59,14 @@ ADK_BENCH_MD=cases.md go test -run TestBenchCases ./internal/cli/
 | [sample-app](../testdata/e2e/sample-app) | 결제·로그인·Supabase·FastAPI 문제를 넣은 앱 | 10 | 10 | 0 | 0 |
 | [fake-assignment](../testdata/untrusted/fake-assignment) | 자동 실행 설정을 넣은 가짜 채용 과제 (`--untrusted`) | 6 | 6 | 0 | 0 |
 | [clean-app](../testdata/bench/cases/clean-app) | sample-app과 같은 기능을 문제 없이 짠 앱 | 0 | 0 | 0 | 0 |
-| [tricky-app](../testdata/bench/cases/tricky-app) | 패턴 규칙이 놓치기 쉬운 모양으로 넣은 문제 | 4 | 1 | 3 | 0 |
+| [tricky-app](../testdata/bench/cases/tricky-app) | 패턴 규칙이 놓치기 쉬운 모양으로 넣은 문제 | 4 | 2 | 2 | 0 |
 
 tricky-app에서 놓친 것:
 
 - `FA-001` `main.py`: 허용 출처를 환경 변수에서 읽고 기본값이 `"*"`인 경우. 규칙은 코드에 `"*"`가 직접 적힌 경우만 봅니다.
 - `KR-AUTH-001` `app/login/route.ts`: `state`를 만들어 쿠키에는 넣었지만 인가 요청 주소에는 빠뜨린 경우. 규칙은 파일에 `state` 값이 있는지만 봅니다.
-- `PH-003` `public/order.php`: 입력을 변수에 담아 다른 줄에서 SQL 문에 붙인 경우. README의 "`scan`의 한계"에 적은 그대로입니다.
+
+처음에는 `PH-003` `public/order.php`(입력을 변수에 담아 다른 줄에서 SQL 문에 붙인 경우)도 놓쳤습니다. 2026-11-18에 같은 함수 안의 변수를 따라가게 고친 뒤로는 찾습니다. 이 예제를 알고 고친 것이라, 다른 코드에서도 같은 비율로 찾는다는 뜻은 아닙니다.
 
 ## 이 숫자로 말할 수 없는 것
 
