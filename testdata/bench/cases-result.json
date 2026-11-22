@@ -38,12 +38,12 @@
   "tricky-app": {
     "expected": 4,
     "found": [
+      "PH-003 @ public/order.php",
       "SB-003 @ app/admin/page.tsx"
     ],
     "missed": [
       "FA-001 @ main.py",
-      "KR-AUTH-001 @ app/login/route.ts",
-      "PH-003 @ public/order.php"
+      "KR-AUTH-001 @ app/login/route.ts"
     ],
     "extra": []
   }
