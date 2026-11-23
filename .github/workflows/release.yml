@@ -37,7 +37,7 @@ jobs:
           go-version-file: go.mod
           cache: false # 릴리스 빌드는 캐시를 쓰지 않는다
       - name: 시험
-        run: go test -count=1 ./...
+        run: go test -tags gore2regex -count=1 ./...
       - name: build
         env:
           GOOS: ${{ matrix.goos }}
@@ -47,7 +47,8 @@ jobs:
           ext=""
           if [ "$GOOS" = "windows" ]; then ext=".exe"; fi
           mkdir -p dist
-          go build -trimpath \
+          # gitleaks 공식 릴리스처럼 규칙을 RE2(go-re2)로 돌린다(git 기록 점검이 다섯 배쯤 빠름).
+          go build -tags gore2regex -trimpath \
             -ldflags "-s -w -X github.com/iimmuunnee/ai-defense-kit/internal/cli.Version=${GITHUB_REF_NAME#v}" \
             -o "dist/adk_${GOOS}_${GOARCH}${ext}" ./cmd/adk
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

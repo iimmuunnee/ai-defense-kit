@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	aidefensekit "github.com/iimmuunnee/ai-defense-kit"
+	"github.com/iimmuunnee/ai-defense-kit/internal/checker/secrets"
 )
 
 // Version is set at link time (-X .../internal/cli.Version=1.0.0) by release
@@ -111,6 +112,7 @@ func runVersion(stdout io.Writer) int {
 		commit = "알 수 없음"
 	}
 	fmt.Fprintf(stdout, "커밋: %s\n", commit)
+	fmt.Fprintf(stdout, "비밀 키 정규식 엔진: %s\n", secrets.RegexpEngine())
 	for _, b := range dataBundles {
 		fmt.Fprintf(stdout, "%s: %s\n", b.label, hashes[b.dir])
 	}
