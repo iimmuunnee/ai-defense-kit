@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.27"
-      - run: go install github.com/iimmuunnee/ai-defense-kit/cmd/adk@<쓰려는 태그 또는 커밋 해시>
+      - run: go install -tags gore2regex github.com/iimmuunnee/ai-defense-kit/cmd/adk@<쓰려는 태그 또는 커밋 해시>
       - run: adk scan . --format md,json --out ./adk-report
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()

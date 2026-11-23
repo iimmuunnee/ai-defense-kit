@@ -11,8 +11,20 @@ import (
 	"strconv"
 	"strings"
 
+	glregexp "github.com/zricethezav/gitleaks/v8/regexp"
+
 	"github.com/iimmuunnee/ai-defense-kit/internal/finding"
 )
+
+// RegexpEngine names the regexp engine gitleaks' rules run on in this build.
+// Go's standard engine is about five times slower on git history; release
+// builds use RE2 through the gore2regex build tag, as gitleaks' own releases do.
+func RegexpEngine() string {
+	if glregexp.Version == "stdlib" {
+		return "Go 표준 regexp (느림, -tags gore2regex 없이 빌드)"
+	}
+	return "RE2 (go-re2)"
+}
 
 const (
 	titleCurrent = "코드에 비밀 키가 들어 있음"

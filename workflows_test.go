@@ -62,6 +62,42 @@ func TestWorkflowsParseAndPinActionsToCommits(t *testing.T) {
 	}
 }
 
+// The secrets check runs gitleaks' rules, whose regexps take about five times
+// longer on Go's standard engine than on RE2 (gitleaks' own releases build with
+// this tag). Release builds and the main CI test run must use it.
+func TestReleaseAndCIBuildWithRE2Tag(t *testing.T) {
+	goCmd := regexp.MustCompile(`\bgo (build|test)\b`)
+	tagged := regexp.MustCompile(`\bgo (build|test) [^\n]*-tags gore2regex\b`)
+	read := func(name string) []string {
+		raw, err := os.ReadFile(filepath.Join(".github", "workflows", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return regexp.MustCompile(`\r?\n`).Split(string(raw), -1)
+	}
+	n := 0
+	for _, line := range read("release.yml") {
+		if goCmd.MatchString(line) {
+			n++
+			if !tagged.MatchString(line) {
+				t.Errorf("release.yml: -tags gore2regex가 없는 go 명령: %s", line)
+			}
+		}
+	}
+	if n < 2 {
+		t.Errorf("release.yml에서 go build와 go test를 찾지 못했습니다 (%d줄)", n)
+	}
+	full := false
+	for _, line := range read("ci.yml") {
+		if tagged.MatchString(line) && regexp.MustCompile(`\./\.\.\.\s*$`).MatchString(line) {
+			full = true
+		}
+	}
+	if !full {
+		t.Error("ci.yml: -tags gore2regex로 전체(./...)를 시험하는 줄이 없습니다")
+	}
+}
+
 func TestReleaseWorkflowRunsOnTagsOnlyAndWritesOnlyInReleaseJob(t *testing.T) {
 	wf, ok := loadWorkflows(t)["release.yml"]
 	if !ok {

@@ -22,6 +22,9 @@ func TestVersionCommandPrintsVersionAndHashes(t *testing.T) {
 	if !strings.Contains(out, "커밋: ") {
 		t.Fatalf("커밋 줄이 없습니다: %q", out)
 	}
+	if !regexp.MustCompile(`비밀 키 정규식 엔진: (RE2 \(go-re2\)|Go 표준 regexp \(느림, -tags gore2regex 없이 빌드\))\n`).MatchString(out) {
+		t.Fatalf("정규식 엔진 줄이 없습니다: %q", out)
+	}
 	for _, label := range []string{"규칙 데이터", "설명 데이터", "고치는 방법 데이터", "매핑 데이터"} {
 		if !regexp.MustCompile(label + `: [0-9a-f]{16}\n`).MatchString(out) {
 			t.Fatalf("%s 해시 줄이 없습니다: %q", label, out)
