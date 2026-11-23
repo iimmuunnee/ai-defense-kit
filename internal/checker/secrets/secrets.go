@@ -73,13 +73,27 @@ func (c secretsChecker) Run(ctx context.Context, t checker.Target) (checker.Resu
 	current = dropPublicSupabaseKeys(current)
 	explainCur, explainHist := c.explain("secret-current.md"), c.explain("secret-history.md")
 
+	// Under --untrusted the scanned repository's own .gitignore must not lower
+	// a finding, so every current-file key stays high there.
+	local := map[string]bool{}
+	if hasGit(root) && !t.Untrusted {
+		var locs []string
+		for _, g := range current {
+			locs = append(locs, finding.NormalizePath(root, g.File))
+		}
+		local = localOnly(ctx, root, locs)
+	}
+	explainLocal := c.explain("secret-local.md")
+
 	var res checker.Result
 	var history []report.Finding
 	if hasGit(root) {
 		// The history scan is the slow stage. If the timeout stops it, the
 		// current-file results still reach the report, with a warning.
+		partial := merge(root, current, nil, explainCur, explainHist)
+		markLocal(partial, local, explainLocal)
 		checker.SavePartial(ctx, checker.Result{
-			Findings: merge(root, current, nil, explainCur, explainHist),
+			Findings: partial,
 			Warnings: []string{warnHistoryUnfinished},
 		})
 		var hs historyScan
@@ -105,6 +119,7 @@ func (c secretsChecker) Run(ctx context.Context, t checker.Target) (checker.Resu
 	history = dropPublicSupabaseKeys(history)
 
 	res.Findings = merge(root, current, history, explainCur, explainHist)
+	markLocal(res.Findings, local, explainLocal)
 	return res, nil
 }
 
@@ -126,7 +141,7 @@ func merge(root string, current, history []report.Finding, explainCur, explainHi
 		k := g.RuleID + "\x00" + g.Secret
 		loc := curLoc(g)
 		seen[k] = true
-		out = append(out, build(g, "secret-current", loc, finding.High, "코드에 비밀 키가 들어 있음", g.Secret, "", explainCur,
+		out = append(out, build(g, "secret-current", loc, finding.High, titleCurrent, g.Secret, "", explainCur,
 			"코드에서 키를 지우고 환경 변수로 옮긴 뒤, 이미 공유된 적이 있다면 키를 폐기하고 새로 발급하세요."))
 		curPos = append(curPos, [2]int{g.StartLine, g.StartColumn})
 	}
