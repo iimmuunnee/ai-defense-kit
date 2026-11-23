@@ -25,7 +25,7 @@ const (
 )
 
 // BuiltinKinds are the finding kinds that kinds.yaml may reference.
-var BuiltinKinds = []string{"secret-current", "secret-history", "vuln-lib", "kev-lib", "malicious-lib", "SB-001", "AS-001", "AS-002", "AR-001", "AR-002", "AR-003", "AR-004", "AR-005", "AR-006", "CI-001", "CI-002", "CI-003", "CI-004", "CI-005", "WA-001", "WA-002", "WA-003", "WA-004", "WA-005", "WA-006", "WA-007", "WA-101", "WA-102", "WA-103", "DV-001", "DV-002", "DV-003", "DV-004", "DV-101", "DV-102", "DV-103", "DV-201", "DV-202", "DV-203", "DV-204"}
+var BuiltinKinds = []string{"secret-current", "secret-history", "secret-local", "vuln-lib", "kev-lib", "malicious-lib", "SB-001", "AS-001", "AS-002", "AR-001", "AR-002", "AR-003", "AR-004", "AR-005", "AR-006", "CI-001", "CI-002", "CI-003", "CI-004", "CI-005", "WA-001", "WA-002", "WA-003", "WA-004", "WA-005", "WA-006", "WA-007", "WA-101", "WA-102", "WA-103", "DV-001", "DV-002", "DV-003", "DV-004", "DV-101", "DV-102", "DV-103", "DV-201", "DV-202", "DV-203", "DV-204"}
 
 const (
 	rootDir   = "mappings"
