@@ -13,7 +13,8 @@ jobs:
   test:
     name: test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 25
+    # 평소 가장 느린 windows도 7분 안쪽이다. 멈추면 아래 단계별 제한이 먼저 끊는다.
+    timeout-minutes: 20
     strategy:
       fail-fast: false # 한 OS가 실패해도 나머지 OS 결과를 끝까지 본다
       matrix:
@@ -37,11 +38,35 @@ jobs:
           fi
       # 릴리스와 같이 gitleaks 규칙을 RE2(go-re2)로 돌린다. 표준 regexp보다 git 기록 점검이 다섯 배쯤 빠르다.
       - run: go vet -tags gore2regex ./...
-      - run: go test -tags gore2regex -count=1 ./...
+        timeout-minutes: 8
+      # 멈춤 진단: 시험 바이너리 빌드를 시험 실행과 나눈다. 이 단계에서 멈추면 빌드(컴파일·링크) 쪽이다.
+      - name: build test binaries
+        run: go test -tags gore2regex -count=1 -run '^$' ./...
+        timeout-minutes: 10
+      # -timeout 8m: 시험 바이너리 하나가 8분을 넘기면 Go가 멈춘 시험 이름과 goroutine 스택을 찍고 실패한다
+      # (평소 windows에서 이 단계 전체가 3분 안쪽, 가장 느린 internal/cli가 부하 걸린 PC에서 3분 남짓).
+      # go가 9분에 바이너리를 강제로 끝내므로, 그래도 단계 제한(12분)에 걸리면 보통의 시험 멈춤이
+      # 아니다(끝나지 않는 하위 프로세스, 실행기 문제 등).
+      # 패키지가 여럿이면 go가 출력을 패키지가 끝날 때까지 모아 두므로 여기에는 -v를 붙이지 않는다.
+      - run: go test -tags gore2regex -count=1 -timeout 8m ./...
+        timeout-minutes: 12
       # 태그 없이 go install한 빌드(표준 regexp)도 비밀 키 점검이 같게 도는지 본다.
-      - run: go test -count=1 ./internal/checker/secrets/
-      - run: go test -tags gore2regex -race -count=1 -run TestMaskTextAndCheckerRunConcurrently ./internal/checker/secrets/
+      # 패키지 하나는 -v 출력이 바로 흘러나와, 끊겨도 마지막으로 시작한 시험이 로그에 남는다.
+      - run: go test -count=1 -timeout 5m -v ./internal/checker/secrets/
+        timeout-minutes: 8
+      - run: go test -tags gore2regex -race -count=1 -timeout 5m -v -run TestMaskTextAndCheckerRunConcurrently ./internal/checker/secrets/
+        timeout-minutes: 8
+      # 시험 단계가 실패하거나 시간 제한에 걸리면, 끝나지 않고 남은 go·git·시험 프로세스를 적는다.
+      - name: list leftover processes (windows)
+        if: failure() && runner.os == 'Windows'
+        timeout-minutes: 2
+        shell: pwsh
+        run: |
+          Get-CimInstance Win32_Process |
+            Where-Object { $_.Name -match '^(go|git|.+\.test)\.exe$' } |
+            Format-Table -AutoSize -Wrap ProcessId, ParentProcessId, Name, CreationDate, CommandLine
       # 취약점 검사는 네트워크가 필요하고 결과가 OS와 무관하므로 ubuntu에서만 돈다.
       - name: govulncheck
         if: matrix.os == 'ubuntu-latest'
+        timeout-minutes: 8
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 -tags gore2regex ./...
