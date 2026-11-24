@@ -36,7 +36,14 @@ const (
 	// historyMaxSize is the largest single change the history scan checks.
 	// Larger than maxFileSize so that a committed bundle over 1MB is still
 	// checked once; see sizeLimited.
-	historyMaxSize     = 5 << 20 // 5MB
+	historyMaxSize = 5 << 20 // 5MB
+	// fileDecodeDepth is how many times the current-file scan decodes base64,
+	// hex, percent and unicode-escaped text before matching (gitleaks' own
+	// program uses 5). One pass found the same keys as five on the repositories
+	// measured. History is left undecoded: decoding it made the check about a
+	// third slower on a 24,000-commit repository, while decoding current files
+	// cost nothing measurable.
+	fileDecodeDepth    = 1
 	warnNoGit          = "git 기록이 없어 과거 커밋은 확인하지 못했습니다."
 	warnHistoryPartial = "git 기록을 읽지 못해 과거 커밋 일부는 확인하지 못했습니다 (git 오류 또는 빠진 객체)."
 	// warnHistoryUnfinished goes with the current-file results saved before the
@@ -233,8 +240,15 @@ func build(g report.Finding, kind, loc string, sev finding.Severity, title, secr
 	// The fingerprint comes from the evidence the report shows, never from the
 	// secret: a 4-character prefix can be guessed back from a published hash.
 	// numberRepeats gives the occurrence number once all findings are known.
-	evidence := finding.Redact(secret) + evSuffix
+	// A decoded value is not in the file as shown, so the evidence and the title
+	// say so. The different evidence text also keeps a decoded finding from
+	// taking the occurrence number of a plain one with the same masked value.
+	note, tail := decodedNote(g.Tags)
+	evidence := finding.Redact(secret) + tail + evSuffix
 	conf, fullTitle := finding.Certain, title+" ("+g.RuleID+")"
+	if note != "" {
+		fullTitle += " - " + note
+	}
 	if why := lowerReason(loc, g); why != "" {
 		conf, fullTitle = finding.Suspect, fullTitle+" - "+why
 	}
@@ -310,6 +324,7 @@ func scanFiles(ctx context.Context, root string, untrusted bool) ([]report.Findi
 	if err != nil {
 		return nil, err
 	}
+	d.MaxDecodeDepth = fileDecodeDepth
 	return d.DetectSource(ctx, &sources.Files{
 		Path:        root,
 		Config:      &d.Config,
@@ -674,4 +689,37 @@ func dropPublicSupabaseKeys(in []report.Finding) []report.Finding {
 		out = append(out, g)
 	}
 	return out
+}
+
+// decodedNote says how a finding's value was encoded in the file, from the tags
+// gitleaks adds when it finds a secret only after decoding.
+func decodedNote(tags []string) (note, evidenceTail string) {
+	var names []string
+	for _, t := range tags {
+		kind, ok := strings.CutPrefix(t, "decoded:")
+		if !ok {
+			continue
+		}
+		name := decodedNames[kind]
+		if name == "" {
+			name = "인코딩을"
+		}
+		if !slices.Contains(names, name) {
+			names = append(names, name)
+		}
+	}
+	if len(names) == 0 {
+		return "", ""
+	}
+	what := strings.Join(names, ", ")
+	return what + " 풀어서 찾음", " (" + what + " 푼 값)"
+}
+
+// decodedNames gives each gitleaks encoding name its Korean wording, with the
+// object particle the sentence needs.
+var decodedNames = map[string]string{
+	"base64":  "base64를",
+	"hex":     "16진수(hex)를",
+	"percent": "URL 인코딩(%)을",
+	"unicode": "유니코드 이스케이프(\\u)를",
 }
